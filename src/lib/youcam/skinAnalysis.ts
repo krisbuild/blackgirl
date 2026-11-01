@@ -2,7 +2,6 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { readCache, writeCache } from "./cache";
 import { runTask, uploadImage, YouCamError } from "./client";
-import { MOCK_SKIN_ANALYSIS } from "./mock";
 
 /**
  * SD concerns relevant to dark marks (post-inflammatory hyperpigmentation) and acne scarring.
@@ -12,6 +11,7 @@ import { MOCK_SKIN_ANALYSIS } from "./mock";
  * - acne      -> active breakouts
  * - texture   -> unevenness, which includes scarring
  * - redness, radiance, pore, oiliness, moisture -> context for evenness and routine advice
+ * - skin_type -> oily/dry/normal per zone, used to pick product textures
  */
 export const SKIN_ACTIONS = [
   "age_spot",
@@ -22,6 +22,7 @@ export const SKIN_ACTIONS = [
   "pore",
   "oiliness",
   "moisture",
+  "skin_type",
 ] as const;
 export type SkinConcern = (typeof SKIN_ACTIONS)[number];
 
@@ -35,7 +36,7 @@ export interface ConcernScore {
 }
 
 export interface SkinAnalysisResult {
-  source: "live" | "cache" | "mock";
+  source: "live" | "cache";
   analyzedAt: string;
   concerns: ConcernScore[];
   overall?: number;
@@ -92,18 +93,10 @@ export function parseSkinResults(results: unknown): Omit<SkinAnalysisResult, "so
   return { concerns: out, overall, skinAge, skinType };
 }
 
-export function isMockMode(): boolean {
-  return process.env.YOUCAM_MODE === "mock" || !process.env.YOUCAM_API_KEY;
-}
-
 export async function analyzeSkin(
   image: Uint8Array,
   contentType: "image/jpeg" | "image/png",
 ): Promise<SkinAnalysisResult> {
-  if (isMockMode()) {
-    return { ...MOCK_SKIN_ANALYSIS, source: "mock", analyzedAt: new Date().toISOString() };
-  }
-
   // Same photo + same actions = same answer: never spend units twice.
   const key = createHash("sha256")
     .update(image)

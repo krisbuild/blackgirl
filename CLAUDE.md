@@ -9,7 +9,7 @@ Read this whole file before writing any code. It carries the context from planni
 - **Requirements:** a working web or mobile prototype that integrates at least one YouCam API meaningfully. Simple API wrappers won't meet the bar.
 - **Judging:** technological implementation (depth of the API integration, working code), design (a complete, coherent experience), potential impact (a real problem for a real audience), and quality of idea (a creative, non-obvious use of the API).
 - **Submission:** a repository with a license and setup instructions, a text description, screenshots, and a 1–3 minute demo video on YouTube that explains which YouCam API is used and shows the app running on its target device, with no unlicensed music or trademarks.
-- **API credits:** 1,000 free units per participant. Don't waste them: cache results and keep a mock mode.
+- **API credits:** 1,000 free units per participant. Don't waste them: cache results.
 
 ## The product
 A skin tracker for **black women with post-acne dark marks (post-inflammatory hyperpigmentation) and acne scars**. Dark marks are the #1 skin concern for melanin-rich skin, and generic skin apps ignore it.
@@ -40,7 +40,7 @@ What they had in common: a narrow, underserved audience; multiple YouCam APIs in
 - The YouCam API key stays **server-side only** (environment variables, server routes). Never put it in client code.
 - **No medical claims or diagnoses.** Don't use words like "treat," "cure" or "diagnose." Point users to a dermatologist for medical concerns. Don't use "flaws" or "fix your skin."
 - **Be honest about accuracy.** Test how well the API reads deep skin tones (Fitzpatrick V–VI), report the results in the app and README, and show lower-confidence messaging when capture quality is poor.
-- Keep a **mock or demo mode** with clearly labeled sample data, so the app can be shown without spending API credits.
+- **No mock or demo mode** (owner decision, 2026-11-01): this is a real product, and every result must come from the live YouCam API. Save credits with caching instead.
 - Cache API results, cap retries and handle errors and loading states gracefully.
 - Treat photos privately: don't keep them longer than needed, and offer a delete option.
 
@@ -51,7 +51,7 @@ Next.js (App Router), TypeScript and Tailwind, deployed on Vercel. Use server ro
 1. Read the YouCam Skin Analysis API docs and confirm exactly which concerns it returns (dark spots, acne, texture, and so on), plus the request and response format.
 2. Make one real API call work through a server route, test it on 3–5 deep-skin-tone selfies and record how accurate it is. If dark marks aren't detected well, adjust the angle before building more.
 3. Build the core flow: capture → analyze → explain → save → compare.
-4. Polish the design, add the mock mode and deploy to Vercel.
+4. Polish the design and deploy to Vercel.
 5. Add the ingredient safety scanner if there's time.
 6. Write the README with setup instructions and accuracy findings, take screenshots and record the demo video. Submit well before 5:45 PM Lagos time on Nov 2.
 

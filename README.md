@@ -10,7 +10,7 @@ Built for the YouCam API Skin AI & eCommerce VTO Hackathon.
 ## Status
 
 - [x] Server-side YouCam V2 client: upload → pre-signed PUT → create task → bounded polling
-- [x] `POST /api/analyze`: Skin Analysis (SD) with a result cache, mock mode and friendly errors
+- [x] `POST /api/analyze`: Skin Analysis (SD) with a result cache and friendly errors
 - [ ] Guided capture UI, plain-language explanation, history & compare, next steps
 - [ ] Skin Tone / Fitzpatrick analysis for confidence messaging
 - [ ] Deep-skin-tone accuracy findings (Fitzpatrick V–VI)
@@ -19,15 +19,15 @@ Built for the YouCam API Skin AI & eCommerce VTO Hackathon.
 
 ```bash
 npm install
-cp .env.example .env.local   # then add YOUCAM_API_KEY and set YOUCAM_MODE=live
+cp .env.example .env.local   # then add YOUCAM_API_KEY
 npm run dev
 ```
 
 Get an API key at <https://yce.makeupar.com/api-console/en/api-keys/>. The key is read only
 on the server (`process.env.YOUCAM_API_KEY`). Never give it a `NEXT_PUBLIC_` prefix.
 
-**Mock mode:** with `YOUCAM_MODE=mock`, or no key set, `/api/analyze` returns clearly labelled
-demo data (`"source": "mock"`) and spends no units.
+Without a key, `/api/analyze` responds `503` ("live analysis isn't configured"). Every result
+is a real YouCam analysis.
 
 ### Try the API route
 
@@ -35,7 +35,7 @@ demo data (`"source": "mock"`) and spends no units.
 npm run smoke -- ./path/to/selfie.jpg
 ```
 
-The response's `source` is `live`, `cache` (same photo seen before, no units spent) or `mock`.
+The response's `source` is `live` or `cache` (same photo seen before, no units spent).
 
 ## How the YouCam integration works
 
@@ -49,7 +49,7 @@ The response's `source` is `live`, `cache` (same photo seen before, no units spe
 
 Concerns requested (SD, needs a short side ≥ 480 px): `age_spot` (YouCam's pigmentation /
 spots detector, our proxy for dark marks), `acne`, `texture`, `redness`, `radiance`, `pore`,
-`oiliness` and `moisture`.
+`oiliness`, `moisture` and `skin_type`.
 
 We show `raw_score` as the main number. The docs say `ui_score` is deliberately adjusted
 upward "as a psychological motivator", which isn't honest enough for tracking progress.
