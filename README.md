@@ -29,6 +29,14 @@ on the server (`process.env.YOUCAM_API_KEY`). Never give it a `NEXT_PUBLIC_` pre
 Without a key, `/api/analyze` responds `503` ("live analysis isn't configured"). Every result
 is a real YouCam analysis.
 
+### Database (Supabase)
+
+1. Create a Supabase project and copy the URL and publishable key into `.env.local`.
+2. Turn on **Authentication → Sign In / Providers → Allow anonymous sign-ins**. Each visitor
+   gets a private history without creating an account.
+3. Open the **SQL Editor**, paste `supabase/migrations/001_init.sql` and run it. This creates the
+   `scans` table, the private `scan-photos` bucket and row-level security, so users only see their own data.
+
 ### Try the API route
 
 ```bash
