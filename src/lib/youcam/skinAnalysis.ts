@@ -40,6 +40,8 @@ export interface SkinAnalysisResult {
   concerns: ConcernScore[];
   overall?: number;
   skinAge?: number;
+  /** e.g. { whole: "Oily", t_zone: "Oily", u_zone: "Normal" } when skin_type was requested */
+  skinType?: Record<string, string>;
 }
 
 type RawOutput = {
@@ -48,6 +50,8 @@ type RawOutput = {
   raw_score?: number;
   mask_urls?: string[];
   score?: number;
+  region?: string;
+  skin_type?: string;
 };
 
 /** Normalise the format=json result. Tolerant of the shape variations in the docs. */
@@ -55,6 +59,7 @@ export function parseSkinResults(results: unknown): Omit<SkinAnalysisResult, "so
   const out: ConcernScore[] = [];
   let overall: number | undefined;
   let skinAge: number | undefined;
+  let skinType: Record<string, string> | undefined;
 
   const r = results as { output?: RawOutput[]; all?: { score?: number }; skin_age?: number } | undefined;
   for (const item of r?.output ?? []) {
@@ -65,6 +70,10 @@ export function parseSkinResults(results: unknown): Omit<SkinAnalysisResult, "so
     }
     if (item.type === "skin_age") {
       skinAge = item.score;
+      continue;
+    }
+    if (item.type === "skin_type") {
+      if (item.skin_type) (skinType ??= {})[item.region ?? "whole"] = item.skin_type;
       continue;
     }
     if (typeof item.raw_score !== "number" && typeof item.ui_score !== "number") continue;
@@ -80,7 +89,7 @@ export function parseSkinResults(results: unknown): Omit<SkinAnalysisResult, "so
   if (out.length === 0) {
     throw new YouCamError("Skin analysis returned no scores", "bad_response");
   }
-  return { concerns: out, overall, skinAge };
+  return { concerns: out, overall, skinAge, skinType };
 }
 
 export function isMockMode(): boolean {

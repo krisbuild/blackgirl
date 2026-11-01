@@ -1,0 +1,191 @@
+{
+  "_note": "Real YouCam SD skin-analysis response (format=json), 2026-11-01, from the project owner's own selfie, shared with consent. Signed mask/photo URLs removed because they expose the photo; everything else is verbatim.",
+  "status": 200,
+  "data": {
+    "error": null,
+    "results": {
+      "output": [
+        {
+          "ui_score": 81,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 81.22660517692566,
+          "type": "firmness",
+          "url": null
+        },
+        {
+          "ui_score": 76,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 69.24600601196289,
+          "type": "droopy_lower_eyelid",
+          "url": null
+        },
+        {
+          "ui_score": 82,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 82.55294561386108,
+          "type": "droopy_upper_eyelid",
+          "url": null
+        },
+        {
+          "ui_score": 79,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 75.83433389663696,
+          "type": "eye_bag",
+          "url": null
+        },
+        {
+          "ui_score": 67,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 47.72489070892334,
+          "type": "tear_trough",
+          "url": null
+        },
+        {
+          "ui_score": 69,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 53.65336608886719,
+          "type": "oiliness",
+          "url": null
+        },
+        {
+          "ui_score": 69,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 53.63303101062775,
+          "type": "pore",
+          "url": null
+        },
+        {
+          "ui_score": 99,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 100,
+          "type": "redness",
+          "url": null
+        },
+        {
+          "ui_score": 83,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 85.40214896202087,
+          "type": "texture",
+          "url": null
+        },
+        {
+          "ui_score": 75,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 68.13614964485168,
+          "type": "radiance",
+          "url": null
+        },
+        {
+          "ui_score": 78,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 86.4986801147461,
+          "type": "age_spot",
+          "url": null
+        },
+        {
+          "ui_score": 71,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 64.87957835197449,
+          "type": "dark_circle_v2",
+          "url": null
+        },
+        {
+          "ui_score": 79,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 88.3729338645935,
+          "type": "wrinkle",
+          "url": null
+        },
+        {
+          "ui_score": 84,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 87.18346,
+          "type": "acne",
+          "url": null
+        },
+        {
+          "ui_score": 70,
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "raw_score": 50.2372682094574,
+          "type": "moisture",
+          "url": null
+        },
+        {
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "type": "skin_type",
+          "region": "whole",
+          "skin_type": "Oily",
+          "url": null
+        },
+        {
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "type": "skin_type",
+          "region": "t_zone",
+          "skin_type": "Oily",
+          "url": null
+        },
+        {
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "type": "skin_type",
+          "region": "u_zone",
+          "skin_type": "Oily",
+          "url": null
+        },
+        {
+          "score": 77.46666666666667,
+          "type": "all",
+          "url": null
+        },
+        {
+          "score": 25,
+          "type": "skin_age",
+          "url": null
+        },
+        {
+          "mask_urls": [
+            "<redacted: pre-signed S3 URL, expired 2026-11-01T10:11Z>"
+          ],
+          "type": "resize_image",
+          "url": null
+        }
+      ]
+    },
+    "task_status": "success"
+  }
+}
