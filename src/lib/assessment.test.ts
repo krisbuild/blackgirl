@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { assess, verifyProducts, type AssessmentInput } from "./assessment";
-import { EVIDENCE } from "./evidence";
 import { PRODUCTS } from "./products";
 
 // Real measurements from a team member's selfie (YouCam SD, 2026-11-02).
@@ -33,11 +32,6 @@ describe("assess (real selfie measurements)", () => {
     expect(redness?.band).toBeUndefined();
   });
 
-  it("attaches evidence to every plan step", () => {
-    const steps = a.plan.phases.flatMap((p) => p.steps);
-    expect(steps.length).toBeGreaterThan(4);
-    for (const s of steps) expect(s.evidence, s.name).toBeDefined();
-  });
 
   it("never recommends a product whose ingredient list hasn't been verified", () => {
     for (const s of a.plan.phases.flatMap((p) => p.steps)) {
@@ -80,11 +74,3 @@ describe("verifyProducts", () => {
   });
 });
 
-describe("evidence registry", () => {
-  it("cites at least one source for every graded step", () => {
-    for (const [name, e] of Object.entries(EVIDENCE)) {
-      expect(e.sources.length, name).toBeGreaterThan(0);
-      for (const s of e.sources) expect(s.url, name).toMatch(/^https:\/\//);
-    }
-  });
-});

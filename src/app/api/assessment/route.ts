@@ -1,6 +1,6 @@
 import { assess, type AssessmentInput } from "@/lib/assessment";
 
-/** Server-side assessment: YouCam measurements + the user's answers -> evidence-graded plan. */
+/** Server-side assessment: YouCam measurements + the user's answers -> personal plan. */
 export async function POST(req: Request) {
   let body: AssessmentInput;
   try {

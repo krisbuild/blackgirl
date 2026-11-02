@@ -5,7 +5,6 @@ import { checkIngredients, VERDICT_LABEL, type SkinProfile, type Verdict } from 
 import { bandFromCount, bandOf } from "@/lib/insights";
 import { countOf, listScans, scoreOf } from "@/lib/journal";
 import { readLabel } from "@/lib/ocr";
-import { AuthenticityCheck } from "./AuthenticityCheck";
 
 const VERDICT_STYLE: Record<Verdict, string> = {
   great: "bg-good/15 text-good ring-good/40",
@@ -49,7 +48,6 @@ export function ProductCheck({ onBack }: { onBack: () => void }) {
   const [reading, setReading] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showPaste, setShowPaste] = useState(false);
-  const [tab, setTab] = useState<"ingredients" | "genuine">("ingredients");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const report = useMemo(() => (text.trim().length > 5 && profile ? checkIngredients(text, profile.p) : null), [text, profile]);
@@ -87,28 +85,6 @@ export function ProductCheck({ onBack }: { onBack: () => void }) {
       <p className="mt-2 text-sm text-sand">Snap the ingredient list on any skincare product. We&apos;ll read it and check it against your skin.</p>
       {profile && <p className="mt-3 rounded-xl bg-espresso/60 p-3 text-xs text-muted">{profile.summary}</p>}
 
-      <div className="mt-5 grid grid-cols-2 rounded-full bg-cocoa/80 p-1 ring-1 ring-mahogany" role="tablist">
-        {(
-          [
-            ["ingredients", "Good for my skin?"],
-            ["genuine", "Is it genuine?"],
-          ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            role="tab"
-            aria-selected={tab === id}
-            onClick={() => setTab(id)}
-            className={`rounded-full py-2 text-sm font-semibold transition ${tab === id ? "bg-sun text-espresso" : "text-sand"}`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {tab === "genuine" && <AuthenticityCheck />}
-      {tab === "ingredients" && (
-        <>
         <div className="mt-5 grid grid-cols-2 gap-3">
           <button
             onClick={() => fileRef.current?.click()}
@@ -186,12 +162,9 @@ export function ProductCheck({ onBack }: { onBack: () => void }) {
             ))}
           </div>
         )}
-        </>
-      )}
-
       <p className="mt-8 text-[11px] leading-relaxed text-muted">
-        Ingredient checks read the label only, and reading a photo can miss words, so check the list above. The genuine
-        check looks for warning signs; it can&apos;t prove a product is real. Cosmetic guidance, not medical advice.
+        Product check reads the label only, and reading a photo can miss words, so check the list above. It can&apos;t
+        tell whether a product is genuine or counterfeit. Cosmetic guidance, not medical advice.
       </p>
     </section>
   );

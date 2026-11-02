@@ -3,12 +3,11 @@
  *
  * Inputs: YouCam measurements (scores + counts from YouCam's own detection masks) and the user's
  * answers (mark age, mirror check, safety questions). Output: what was measured and how, a plan
- * whose every step carries its evidence grade and sources, products that passed an ingredient
+ * with products that passed an ingredient
  * check against this user's profile, and when to see a dermatologist.
  *
  * This is a cosmetic assessment, not a medical diagnosis.
  */
-import { EVIDENCE, type Evidence } from "./evidence";
 import { checkIngredients, type SkinProfile } from "./ingredients";
 import { bandFromCount, bandOf, BAND_LABEL, CONCERNS, worseBand, type Band } from "./insights";
 import { ZONE_LABEL, type MarkStats, type Zone } from "./marks-shared";
@@ -43,7 +42,7 @@ export type AssessmentInput = {
 
 export type Measurement = { label: string; value: string; band?: Band; method: string };
 export type VerifiedProduct = Product & { verdict: string; matched: string[] };
-export type AssessedStep = PlanStep & { evidence?: Evidence; products: VerifiedProduct[] };
+export type AssessedStep = PlanStep & { products: VerifiedProduct[] };
 export type Assessment = {
   measurements: Measurement[];
   plan: Omit<Plan, "phases"> & { phases: Array<Omit<Plan["phases"][number], "steps"> & { steps: AssessedStep[] }> };
@@ -150,7 +149,7 @@ export function assess(input: AssessmentInput): Assessment {
 
   const phases = plan.phases.map((ph) => ({
     ...ph,
-    steps: ph.steps.map((st) => ({ ...st, evidence: EVIDENCE[st.name], products: verifyProducts(st.name, profile) })),
+    steps: ph.steps.map((st) => ({ ...st, products: verifyProducts(st.name, profile) })),
   }));
 
   const signs = (a.warningSigns ?? [])
@@ -171,7 +170,6 @@ export function assess(input: AssessmentInput): Assessment {
       "Measured: YouCam AI Skin Analysis scores and detection maps for your photo" + (input.quality === "hd" ? " (HD)." : "."),
       "Counted: each dark mark and acne spot on YouCam's own maps, with where it sits.",
       "Your answers: mark age, the mirror check and safety questions adjust the plan.",
-      "Recommendations: each step is graded by published evidence (AAD acne guideline and reviews of dark marks in skin of color).",
       "Products: recommended only if their ingredient list passes the same check as Product check.",
       `Shown as ${BAND_LABEL.clear.toLowerCase()} / ${BAND_LABEL.mild.toLowerCase()} / ${BAND_LABEL.moderate.toLowerCase()} / ${BAND_LABEL.noticeable.toLowerCase()}: cosmetic guidance, not a diagnosis.`,
     ],

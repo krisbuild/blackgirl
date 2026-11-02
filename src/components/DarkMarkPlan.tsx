@@ -7,11 +7,10 @@ import { weeksSince, type Analysis, type ScanNote } from "@/lib/journal";
 import { markAgeMonths, ONSETS, type Onset } from "@/lib/plan";
 
 const BAND_DOT: Record<Band, string> = { clear: "bg-good", mild: "bg-sun", moderate: "bg-honey", noticeable: "bg-terracotta" };
-const GRADE_STYLE = { Strong: "bg-good/15 text-good", Good: "bg-sun/15 text-sun", Emerging: "bg-mahogany text-sand" } as const;
 
 /**
  * The assessment section of the results: questions (mark age, safety), then the server's
- * evidence-graded assessment: what was measured and how, the plan, verified products.
+ * assessment: what was measured and how, the plan, verified products.
  */
 export function DarkMarkPlan({
   analysis,
@@ -202,28 +201,8 @@ export function DarkMarkPlan({
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-1.5">
                           <span className="text-sm font-semibold text-shea">{st.name}</span>
-                          {st.evidence && (
-                            <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${GRADE_STYLE[st.evidence.grade]}`}>
-                              {st.evidence.grade} evidence
-                            </span>
-                          )}
                         </span>
                         <span className="block text-xs leading-relaxed text-muted">{st.note}</span>
-                        {st.evidence && (
-                          <details className="mt-1">
-                            <summary className="cursor-pointer text-[11px] text-honey">Why &amp; sources</summary>
-                            <p className="mt-1 text-[11px] leading-relaxed text-sand">{st.evidence.summary}</p>
-                            <ul className="mt-1 space-y-0.5">
-                              {st.evidence.sources.map((s) => (
-                                <li key={s.cite}>
-                                  <a href={s.url} target="_blank" rel="noreferrer" className="text-[10px] leading-snug text-muted underline underline-offset-2">
-                                    {s.cite}
-                                  </a>
-                                </li>
-                              ))}
-                            </ul>
-                          </details>
-                        )}
                         {st.products.length > 0 && (
                           <span className="mt-1.5 flex flex-wrap gap-1.5">
                             {st.products.map((pr) => (

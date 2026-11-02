@@ -37,20 +37,12 @@ Built for the YouCam API Skin AI & eCommerce VTO Hackathon.
 3. **Your answers:** mark age, "does this match your mirror?", and safety questions (pregnant or breastfeeding
    removes retinoids; sensitive skin slows introduction; warning signs such as a changing or bleeding mark put a
    dermatologist first).
-4. **Evidence:** every plan step carries a grade (Strong / Good / Emerging) and sources: the American Academy of
-   Dermatology acne guideline (2024), reviews of post-inflammatory hyperpigmentation in skin of color, and the tinted-
-   sunscreen review (`src/lib/evidence.ts`).
-5. **Products:** recommended only if their full ingredient list (with source) contains what the step needs and passes
+4. **Products:** recommended only if their full ingredient list (with source) contains what the step needs and passes
    the same ingredient check as Product check for *this* user. Products without a verified list are never shown.
 
 The result is a cosmetic assessment with its working shown ("What we measured", "How Shine reached this"), not a
 medical diagnosis.
 
-### Is it genuine? (`POST /api/authenticity`)
-
-No photo can prove a product is genuine, so Shine looks for **warning signs**: barcode check digit, the GS1 office
-that issued the barcode, a brand match in Open Beauty Facts, NAFDAC number format (then NAFDAC's Green Book), and
-packaging red flags the user ticks. It reports "N warning signs found" or "No warning signs found", never "real".
 
 ### Counting marks, not just scoring them
 
