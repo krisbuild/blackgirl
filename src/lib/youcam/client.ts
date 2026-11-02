@@ -46,6 +46,7 @@ function apiKey(): string {
   // Trim and strip quotes: pasted keys often pick up stray whitespace or quotes.
   const key = process.env.YOUCAM_API_KEY?.trim().replace(/^["']|["']$/g, "");
   if (!key) throw new YouCamError("YOUCAM_API_KEY is not set", "no_api_key");
+  if (/[^\x21-\x7e]/.test(key) && !/\s/.test(key)) throw new YouCamError("YOUCAM_API_KEY contains hidden characters (e.g. • from a masked copy)", "bad_api_key");
   if (/\s/.test(key)) throw new YouCamError("YOUCAM_API_KEY contains spaces or line breaks", "bad_api_key");
   return key;
 }

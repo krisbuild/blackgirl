@@ -33,6 +33,7 @@ export async function GET() {
     startsWithSk: key.startsWith("sk-"),
     hadExtraWhitespaceOrQuotes: raw !== key,
     containsSpaces: /\s/.test(key),
+    containsMaskDotsOrOddCharacters: /[^\x21-\x7e]/.test(key),
     looksLikeWholeLine: key.startsWith("YOUCAM_API_KEY"),
   };
   const youcam = key && !/\s/.test(key)
