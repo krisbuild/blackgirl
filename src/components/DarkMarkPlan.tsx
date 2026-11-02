@@ -227,6 +227,12 @@ export function DarkMarkPlan({
                           </span>
                         )}
                         {st.products.length > 0 && (
+                          <span className="mt-1.5 block text-[11px] leading-snug text-sand">
+                            <span className="font-semibold text-good">Why these: </span>
+                            {st.why}
+                          </span>
+                        )}
+                        {st.products.length > 0 && (
                           <span className="mt-1.5 flex flex-wrap gap-1.5">
                             {st.products.map((pr) => (
                               <span key={pr.brand + pr.name} title={`Contains: ${pr.matched.join(", ")}`} className="rounded-lg bg-espresso/70 px-2 py-1 text-[11px] leading-tight text-sand ring-1 ring-good/30">

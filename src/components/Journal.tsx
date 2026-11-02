@@ -104,6 +104,8 @@ export function Journal({ onNewScan, onHome, onProduct }: { onNewScan: () => voi
             <ChangeSummary scans={scans} metric={metric} />
           </div>
 
+          {scans.length < 2 && <DemoProgress />}
+
           {/* before / after */}
           {first && latest && first.id !== latest.id && first.photo_path && latest.photo_path && urls[first.photo_path] && urls[latest.photo_path] && (
             <div className="mt-5">
@@ -175,7 +177,8 @@ function TrendChart({ scans, metric }: { scans: Scan[]; metric: Metric }) {
   const W = 300, H = 140, padX = 18, padY = 16;
   if (pts.length === 0) return <p className="mt-6 text-center text-sm text-muted">No readings yet.</p>;
   const lo = Math.max(0, Math.min(...pts.map((p) => p.v)) - 10);
-  const hi = Math.min(100, Math.max(...pts.map((p) => p.v)) + 10);
+  const top = Math.max(...pts.map((p) => p.v)) + 10;
+  const hi = metric.unit ? Math.min(100, top) : top; // scores cap at 100; counts can go higher
   const x = (i: number) => (pts.length === 1 ? W / 2 : padX + (i * (W - padX * 2)) / (pts.length - 1));
   const y = (v: number) => H - padY - ((v - lo) / Math.max(1, hi - lo)) * (H - padY * 2);
   const d = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join("");
@@ -285,6 +288,37 @@ function MarkTracker({ scans }: { scans: Scan[] }) {
         </p>
         <p className="text-[10px] leading-tight text-muted">{byCount ? "dark marks since first scan" : "dark-mark score change"}</p>
       </div>
+    </div>
+  );
+}
+
+/** Shown until there are two real scans. Clearly labelled: these numbers are not the user's. */
+const DEMO_COUNTS = [24, 23, 20, 18, 16, 13];
+
+function DemoProgress() {
+  const start = new Date("2026-01-05T12:00:00Z").getTime();
+  const demo: Scan[] = DEMO_COUNTS.map((n, i) => ({
+    id: `demo-${i}`,
+    created_at: new Date(start + i * 14 * 864e5).toISOString(),
+    photo_path: null,
+    concerns: [{ concern: "age_spot", rawScore: 0, uiScore: 0, count: n }],
+    overall: null,
+    skin_age: null,
+    skin_type: null,
+    note: null,
+  }));
+  return (
+    <div className="mt-5 rounded-2xl border border-dashed border-honey/50 bg-cocoa/40 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-display text-lg text-shea">What tracking looks like</p>
+        <span className="shrink-0 rounded-full bg-honey/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-honey">Demo data</span>
+      </div>
+      <p className="mt-1 text-xs text-muted">Example only, not your results. Your own chart fills in from your second scan.</p>
+      <TrendChart scans={demo} metric={METRICS[0]} />
+      <p className="mt-2 text-xs leading-relaxed text-sand">
+        In this example, {DEMO_COUNTS[0] - DEMO_COUNTS[DEMO_COUNTS.length - 1]} fewer dark marks after 10 weeks of daily sunscreen
+        and a fading routine. Real progress is often slower, and lighting can make one week look worse.
+      </p>
     </div>
   );
 }

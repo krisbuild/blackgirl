@@ -63,10 +63,13 @@ line. The same scan reads as **14 dark marks** (7 left cheek, 4 right cheek, 2 f
 1 jaw), covering 0.3% of the face, plus **3 acne spots**. The count is what the journal tracks
 week to week, and it drives the plan whenever it is worse than the score.
 
-### Accuracy on deep skin (real YouCam calls, SD mode)
+### How accurate is this? (real YouCam calls on deep skin, Fitzpatrick V–VI)
+
+The same findings are shown in the app ("How accurate is this?" on the welcome screen and on every result).
 
 | Photo | Dark-mark score | Dark marks counted | Acne score | Acne counted | Redness |
 |---|---|---|---|---|---|
+| Real deep-skin selfie, **HD** (1440×2122) | 87 "clear" | **61** (36 forehead, 10 + 9 cheeks) | 73 | **8** | **100** |
 | Real deep-skin selfie (team member, 543×800, some cheek glare) | 86.6 "clear" | **44** (25 forehead, 9 + 7 cheeks) | 78.4 | **9**, *user reports more* | **100** |
 | AI-generated portrait with visible cheek marks (713×951) | 93.8 "clear" | **14** (11 on cheeks) | 94.8 | 3 | **100** |
 | Team member selfie (earlier test) | 86.5 | n/a | 87.2 | n/a | **100** |
@@ -78,6 +81,23 @@ What we learned:
 - **Acne was under-counted** on the real selfie (the user sees more than 9). Likely causes: low resolution and glare.
   Shine now (1) switches to YouCam's **HD** analysis automatically when the photo's short side is ≥ 1080 px,
   (2) asks "Does this match your mirror?" and plans for more when the user says so, and (3) tells users to blot shine.
+
+- **HD finds more.** The same selfie at HD found 61 dark marks against 44 at standard resolution, so Shine
+  uses HD automatically and shows "Reading confidence: lower" on results from smaller or zoomed photos.
+
+#### Capture errors we hit, and how the app prevents them
+
+| Error | What happened | What Shine does |
+|---|---|---|
+| `error_src_face_too_small` | Our first phone scans failed: YouCam needs the face to fill most of the width. | The guided camera says "come a little closer"; if a photo is still too far, Shine crops to the face and retries once automatically (tested: 422 → 200). |
+| `error_large_face_angle` ("turned too far") | YouCam rejects turned or tilted faces. | The guided camera's live check waits for "facing forward, chin level"; the error message tells the user to look straight at the camera. |
+| Shadows and glare | Overhead light and oily shine can look like, or hide, dark marks on deep skin. | Live lighting check, plus tips to face a window and blot shine. |
+
+#### Progress over time
+The journal shows a trend chart and a then-and-now photo slider once there are two real scans. Until then it shows
+an example chart marked **"Demo data"**, which is never mixed with real results.
+
+> **Cosmetic guidance, not a diagnosis.** See a dermatologist for persistent or severe concerns.
 
 Redness is flagged in-app as less reliable on deep skin. On our first real scan, YouCam returned
 a perfect 100 for redness on deep skin.

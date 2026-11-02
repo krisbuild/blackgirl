@@ -89,3 +89,11 @@ describe("verifyProducts", () => {
   });
 });
 
+
+describe("whyFor", () => {
+  it("explains ingredient steps and generic steps", async () => {
+    const { whyFor } = await import("./assessment");
+    expect(whyFor("Niacinamide 5–10%")).toMatch(/contains niacinamide.*fade dark marks/i);
+    expect(whyFor("Gentle, non-stripping cleanser")).toMatch(/passed our check/);
+  });
+});

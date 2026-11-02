@@ -1,9 +1,14 @@
+"use client";
+
+import { useState } from "react";
+import { Accuracy } from "./Accuracy";
 import { Sun } from "./Sun";
 
 /** Deep-to-golden tones, shown as a quiet nod to who this is built for. */
 const TONES = ["#3b2219", "#4f2d1f", "#6b3d27", "#8a5234", "#a86b45", "#c48a5f"];
 
 export function Welcome({ onStart, onJournal, onProduct }: { onStart: () => void; onJournal: () => void; onProduct: () => void }) {
+  const [showAccuracy, setShowAccuracy] = useState(false);
   return (
     <section className="mx-auto flex min-h-dvh max-w-md flex-col px-6 pb-10 pt-10">
       <header className="rise flex items-center justify-between text-sm text-muted">
@@ -54,6 +59,10 @@ export function Welcome({ onStart, onJournal, onProduct }: { onStart: () => void
           <li aria-hidden="true">·</li>
           <li>Cosmetic guidance, not medical advice</li>
         </ul>
+        <button onClick={() => setShowAccuracy(true)} className="mx-auto mt-3 block text-xs font-semibold text-honey underline underline-offset-2">
+          How accurate is this on deep skin?
+        </button>
+        {showAccuracy && <Accuracy onClose={() => setShowAccuracy(false)} />}
       </div>
     </section>
   );

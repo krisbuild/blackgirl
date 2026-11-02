@@ -12,7 +12,7 @@ import { checkIngredients, type SkinProfile } from "./ingredients";
 import { bandFromCount, bandOf, BAND_LABEL, CONCERNS, worseBand, type Band } from "./insights";
 import { ZONE_LABEL, type MarkStats, type Zone } from "./marks-shared";
 import { buildPlan, type Onset, type Plan, type PlanStep } from "./plan";
-import { PRODUCTS, STEP_TARGET, type Budget, type Product } from "./products";
+import { PRODUCTS, STEP_TARGET, TARGET_WHY, type Budget, type Product } from "./products";
 
 export type Feel = "right" | "more" | "fewer";
 
@@ -45,7 +45,7 @@ export type AssessmentInput = {
 export type Measurement = { label: string; value: string; band?: Band; method: string };
 export type VerifiedProduct = Product & { verdict: string; matched: string[] };
 export type RejectedProduct = { brand: string; name: string; reason: string };
-export type AssessedStep = PlanStep & { products: VerifiedProduct[]; leftOut: RejectedProduct[] };
+export type AssessedStep = PlanStep & { products: VerifiedProduct[]; leftOut: RejectedProduct[]; why: string };
 export type Assessment = {
   measurements: Measurement[];
   plan: Omit<Plan, "phases"> & { phases: Array<Omit<Plan["phases"][number], "steps"> & { steps: AssessedStep[] }> };
@@ -123,6 +123,19 @@ export function checkProducts(
   return { products: products.slice(0, 3), leftOut };
 }
 
+/** Plain-language reason the products under a step were picked. */
+export function whyFor(step: string): string {
+  const t = STEP_TARGET[step];
+  if (!t) return step === "Hands off" ? "" : "gentle formulas whose full ingredient lists passed our check for your skin.";
+  const name: Record<string, string> = {
+    "UV filters": "sun filters",
+    Retinoid: "a retinoid",
+    "Vitamin C": "vitamin C",
+    "Gentle acids (AHA)": "a gentle acid",
+  };
+  return `each one contains ${name[t] ?? t.toLowerCase()} (checked on its real ingredient list) and passed our check for your skin. ${TARGET_WHY[t] ?? ""}`.trim();
+}
+
 export const verifyProducts = (step: string, profile: SkinProfile) => checkProducts(step, profile).products;
 
 export function assess(input: AssessmentInput): Assessment {
@@ -178,7 +191,7 @@ export function assess(input: AssessmentInput): Assessment {
 
   const phases = plan.phases.map((ph) => ({
     ...ph,
-    steps: ph.steps.map((st) => ({ ...st, ...checkProducts(st.name, profile, a.budget) })),
+    steps: ph.steps.map((st) => ({ ...st, ...checkProducts(st.name, profile, a.budget), why: whyFor(st.name) })),
   }));
 
   const signs = (a.warningSigns ?? [])
@@ -193,7 +206,7 @@ export function assess(input: AssessmentInput): Assessment {
     plan: { ...plan, phases },
     dermatologist: { urgent: signs.length > 0, reasons },
     productsNote: anyVerified
-      ? "Products are shown only when their full ingredient list (from INCIDecoder) contains what this step needs and passes our check for your skin."
+      ? "These are real, widely sold products. Each is shown only when its full ingredient list (from INCIDecoder) contains what this step needs and passes our check for your skin. $ / $$ / $$$ are rough price bands, not exact prices; prices vary by shop and country. We don't use reviews or sponsorships."
       : "Product picks appear once each product's full ingredient list has been verified against your skin. Until then, use Product check on anything you own.",
     method: [
       "Measured: YouCam AI Skin Analysis scores and detection maps for your photo" + (input.quality === "hd" ? " (HD)." : "."),

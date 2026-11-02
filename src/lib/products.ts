@@ -40,6 +40,18 @@ export const STEP_TARGET: Record<string, string | undefined> = {
   "Vitamin C": "Vitamin C",
 };
 
+/** Why the step's key ingredient is there, in plain cosmetic language. */
+export const TARGET_WHY: Record<string, string> = {
+  "UV filters": "Daily sun protection stops dark marks getting darker while they fade.",
+  "Benzoyl peroxide": "Benzoyl peroxide helps calm breakouts, so fewer new spots turn into marks.",
+  "Azelaic acid": "Azelaic acid helps fade dark marks and calms breakout-prone skin.",
+  Niacinamide: "Niacinamide helps fade dark marks and even out tone.",
+  "Tranexamic acid": "Tranexamic acid helps lighten stubborn dark marks and is gentle on deep skin.",
+  Retinoid: "A retinoid speeds up skin renewal, helping marks, texture and breakouts.",
+  "Gentle acids (AHA)": "Gentle acids smooth texture with less risk of irritation.",
+  "Vitamin C": "Vitamin C brightens dark marks and backs up your sunscreen.",
+};
+
 export const PRODUCTS: Record<string, Product[]> = {
   "Gentle, non-stripping cleanser": [
     { brand: "CeraVe", name: "Foaming Facial Cleanser", note: "For oily skin; with niacinamide and ceramides", forSkin: "oily", budget: "$" },

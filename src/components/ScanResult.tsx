@@ -5,13 +5,14 @@ import { prepareForAnalysis, zoomToFace } from "@/lib/image";
 import { BAND_LABEL, insightsFrom, type Band, type Insight } from "@/lib/insights";
 import { whereSummary, type MarkStats } from "@/lib/marks-shared";
 import { firstScanDate, saveScan, updateScanNote, type Analysis, type Feel, type ScanNote } from "@/lib/journal";
+import { Accuracy } from "./Accuracy";
 import { DarkMarkPlan } from "./DarkMarkPlan";
 import { SkinViewer } from "./SkinViewer";
 
 type Phase =
   | { kind: "working"; step: "preparing" | "analyzing" | "saving" }
   | { kind: "error"; message: string; code?: string }
-  | { kind: "done"; analysis: Analysis; scanId?: string; firstScan?: string | null; saveError?: string };
+  | { kind: "done"; analysis: Analysis; scanId?: string; firstScan?: string | null; saveError?: string; zoomed?: boolean };
 
 const STEPS = [
   { key: "preparing", label: "Preparing your photo" },
@@ -64,9 +65,16 @@ export function ScanResult({
         const form = new FormData();
         form.append("image", img, "selfie.jpg");
         const res = await fetch("/api/analyze", { method: "POST", body: form });
-        const body = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
+        const body = await res.json().catch(() => ({
+          error:
+            res.status === 504 || res.status === 408
+              ? "The analysis took too long this time. Please try again."
+              : "Our server hit a snag reading this photo. Please try again.",
+          code: `http_${res.status}`,
+        }));
         return { ok: res.ok, status: res.status, body };
       };
+      let zoomed = false;
       try {
         let r = await send(prepared);
         // Face too small for YouCam (must fill > 60% of the width): zoom in on the centre and retry once.
@@ -75,6 +83,7 @@ export function ScanResult({
           prepared = z.blob;
           setSize({ width: z.width, height: z.height });
           setUrl(URL.createObjectURL(prepared));
+          zoomed = true;
           r = await send(prepared);
         }
         if (!r.ok) {
@@ -95,10 +104,10 @@ export function ScanResult({
       try {
         const scan = await saveScan(prepared, analysis);
         const firstScan = await firstScanDate().catch(() => scan.created_at);
-        setPhase({ kind: "done", analysis, scanId: scan.id, firstScan });
+        setPhase({ kind: "done", analysis, scanId: scan.id, firstScan, zoomed });
       } catch (e) {
         // The analysis is still worth showing even if saving failed.
-        setPhase({ kind: "done", analysis, saveError: (e as Error).message });
+        setPhase({ kind: "done", analysis, saveError: (e as Error).message, zoomed });
       }
     })();
   }, [photo]);
@@ -164,6 +173,7 @@ export function ScanResult({
       scanId={phase.scanId}
       firstScan={phase.firstScan}
       saveError={phase.saveError}
+      zoomed={phase.zoomed}
       onRetake={onRetake}
       onJournal={onJournal}
       onProduct={onProduct}
@@ -180,6 +190,7 @@ function Results({
   scanId,
   firstScan,
   saveError,
+  zoomed,
   onRetake,
   onJournal,
   onProduct,
@@ -190,10 +201,12 @@ function Results({
   scanId?: string;
   firstScan?: string | null;
   saveError?: string;
+  zoomed?: boolean;
   onRetake: () => void;
   onJournal: () => void;
   onProduct?: () => void;
 }) {
+  const [showAccuracy, setShowAccuracy] = useState(false);
   const insights = useMemo(() => insightsFrom(analysis.concerns), [analysis]);
   const focus = insights.filter((i) => i.focus);
   const more = insights.filter((i) => !i.focus);
@@ -249,6 +262,8 @@ function Results({
       {acne && <MarkSummary label="acne spot" i={acne} stats={analysis.marks?.acne} feel={feel("acne")} />}
       {acne && <p className="mt-2 text-sm leading-relaxed text-muted">{acne.says[acne.band]}</p>}
 
+      <Confidence quality={analysis.quality} zoomed={zoomed} onMore={() => setShowAccuracy(true)} />
+
       <DarkMarkPlan analysis={analysis} firstScan={firstScan} note={note} onNote={patchNote} noteStatus={noteStatus} onCheckProduct={onProduct} />
 
       {/* everything else */}
@@ -272,8 +287,13 @@ function Results({
       )}
 
       <p className="mt-6 text-xs leading-relaxed text-muted">
-        Shine gives cosmetic guidance, not a diagnosis. For anything painful, spreading or worrying, please see a dermatologist.
+        Cosmetic guidance, not a diagnosis. See a dermatologist for persistent or severe concerns, or anything painful,
+        spreading or worrying.{" "}
+        <button onClick={() => setShowAccuracy(true)} className="font-semibold text-honey underline underline-offset-2">
+          How accurate is this?
+        </button>
       </p>
+      {showAccuracy && <Accuracy onClose={() => setShowAccuracy(false)} />}
 
       <p className={`mt-6 text-center text-xs ${scanId ? "text-good" : "text-[#f0a383]"}`}>
         {scanId ? "✓ Saved to your private journal" : `Not saved: ${saveError}`}
@@ -348,6 +368,31 @@ function MarkSummary({
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** How much to trust this reading, from what we know about the photo. */
+function Confidence({ quality, zoomed, onMore }: { quality?: "hd" | "sd"; zoomed?: boolean; onMore: () => void }) {
+  const lower = quality !== "hd" || zoomed;
+  const points = [
+    quality === "hd"
+      ? "HD photo: small marks are easier to see."
+      : "Lower confidence: this photo was below HD, so small or faint marks may be missed. A closer photo in daylight reads better.",
+    ...(zoomed ? ["We had to zoom in to find your face, so the photo is softer. Hold the phone a little closer next time."] : []),
+    "AI can miss flat or glare-covered spots on deep skin. If you see more in the mirror, tap \"I have more\" and your plan adjusts.",
+  ];
+  return (
+    <div className={`mt-5 rounded-2xl p-4 ring-1 ${lower ? "bg-honey/10 ring-honey/40" : "bg-cocoa/70 ring-mahogany"}`}>
+      <p className="text-sm font-semibold text-shea">{lower ? "Reading confidence: lower" : "Reading confidence: good"}</p>
+      <ul className="mt-1.5 space-y-1 text-xs leading-relaxed text-sand">
+        {points.map((t) => (
+          <li key={t}>· {t}</li>
+        ))}
+      </ul>
+      <button onClick={onMore} className="mt-2 text-xs font-semibold text-honey underline underline-offset-2">
+        How accurate is this?
+      </button>
     </div>
   );
 }
