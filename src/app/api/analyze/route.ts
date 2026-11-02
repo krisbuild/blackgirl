@@ -10,6 +10,7 @@ const TYPES = new Set(["image/jpeg", "image/png"]);
 const FRIENDLY: Record<string, { status: number; message: string }> = {
   error_no_face: { status: 422, message: "We couldn't find a face. Face the camera straight on, in good light." },
   error_large_face_angle: { status: 422, message: "Your face is turned too far. Look straight at the camera." },
+  error_src_face_too_small: { status: 422, message: "Your face looks a little far away. Move closer so your face fills most of the frame, then try again." },
   error_multiple_people: { status: 422, message: "Only one person should be in the photo." },
   error_face_parsing: { status: 422, message: "The photo wasn't clear enough to read. Try brighter, even light." },
   exceed_max_filesize: { status: 413, message: "That photo is too large. Please use one under 10 MB." },

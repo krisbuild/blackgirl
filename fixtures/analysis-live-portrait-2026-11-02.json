@@ -1,0 +1,59 @@
+{
+  "concerns": [
+    {
+      "concern": "pore",
+      "rawScore": 31.1,
+      "uiScore": 59
+    },
+    {
+      "concern": "redness",
+      "rawScore": 100,
+      "uiScore": 99
+    },
+    {
+      "concern": "age_spot",
+      "rawScore": 93.8,
+      "uiScore": 87
+    },
+    {
+      "concern": "radiance",
+      "rawScore": 88.9,
+      "uiScore": 85
+    },
+    {
+      "concern": "texture",
+      "rawScore": 83.5,
+      "uiScore": 82
+    },
+    {
+      "concern": "oiliness",
+      "rawScore": 56.7,
+      "uiScore": 70
+    },
+    {
+      "concern": "dark_circle_v2",
+      "rawScore": 43.1,
+      "uiScore": 62
+    },
+    {
+      "concern": "acne",
+      "rawScore": 94.8,
+      "uiScore": 92
+    },
+    {
+      "concern": "moisture",
+      "rawScore": 52.7,
+      "uiScore": 71
+    }
+  ],
+  "overall": 78.55555555555556,
+  "skinAge": 37,
+  "skinType": {
+    "whole": "Oily",
+    "t_zone": "Oily",
+    "u_zone": "Oily"
+  },
+  "source": "live",
+  "analyzedAt": "2026-11-02T09:15:05.233Z",
+  "_note": "Real YouCam SD skin analysis via /api/analyze on public/showcase/portrait-close.jpg (AI-generated portrait), 2026-11-02. 14 credits. Mask URLs removed (signed, expire in 2h); masks saved in public/showcase/scan/."
+}
