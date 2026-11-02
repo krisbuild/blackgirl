@@ -28,7 +28,13 @@ export type Scan = {
 
 /** Small structured details kept in the scan's `note` column (max 500 chars). */
 export type Feel = "right" | "more" | "fewer";
-export type ScanNote = { markOnset?: string; feel?: Partial<Record<"age_spot" | "acne", Feel>> };
+export type ScanNote = {
+  markOnset?: string;
+  feel?: Partial<Record<"age_spot" | "acne", Feel>>;
+  pregnant?: boolean;
+  sensitive?: boolean;
+  warningSigns?: string[];
+};
 
 export function readNote(s: Pick<Scan, "note">): ScanNote {
   try {

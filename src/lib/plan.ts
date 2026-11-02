@@ -26,6 +26,9 @@ export type PlanInput = {
   /** The user's own check: does the count match what they see in the mirror? */
   darkMarksFeel?: "right" | "more" | "fewer";
   acneFeel?: "right" | "more" | "fewer";
+  /** Safety answers: change which steps are suggested. */
+  pregnant?: boolean;
+  sensitive?: boolean;
   texture?: number;
   onset?: Onset;
   /** Weeks since the user's first scan in their journal. */
@@ -170,12 +173,22 @@ export function buildPlan(input: PlanInput): Plan {
     });
   }
 
+  // Safety: retinoids are not recommended in pregnancy or while breastfeeding.
+  if (input.pregnant) {
+    for (const ph of phases) ph.steps = ph.steps.filter((st) => !/adapalene|retinol|retinoid/i.test(st.name));
+    for (let i = phases.length - 1; i >= 0; i--) if (!phases[i].steps.length) phases.splice(i, 1);
+  }
+
   const habits = [
     "Introduce one new product at a time, two weeks apart, and patch-test behind the ear first.",
     "If anything stings for more than a minute or leaves skin red or flaky, step back. Irritation can create new marks.",
     "Scan once a week, same place, same light, so your journal shows real change.",
     "Skip bleaching creams, mercury, clobetasol and unregulated hydroquinone.",
   ];
+  if (input.pregnant)
+    habits.unshift("Pregnant or breastfeeding: we've left out retinoids. Check every new product with your doctor or midwife.");
+  if (input.sensitive)
+    habits.unshift("Sensitive skin: start each active twice a week and build up slowly. Stop anything that stings or itches.");
 
   const derm = stubborn || worse(dm, "noticeable") || worse(acne, "moderate");
   return {

@@ -1,10 +1,35 @@
 /**
  * Example products for each step of the Dark Mark Plan. Chosen for melanin-rich skin:
  * sunscreens without a white cast, gentle actives, and Black-owned brands where they fit.
- * Not sponsored. Formulas and availability change, so users are pointed to Product check
- * to verify the label of anything they buy.
+ * Not sponsored.
+ *
+ * A product is only ever RECOMMENDED when `inci` holds its full ingredient list (with `inciSource`
+ * saying where it came from). The assessment engine runs that list through the same ingredient check
+ * as Product check, against the user's own profile. Products without a verified list are never shown.
  */
-export type Product = { brand: string; name: string; note: string; blackOwned?: boolean; forSkin?: "oily" | "dry" };
+export type Product = {
+  brand: string;
+  name: string;
+  note: string;
+  blackOwned?: boolean;
+  forSkin?: "oily" | "dry";
+  /** Full INCI ingredient list, copied from the brand's label or site. */
+  inci?: string;
+  /** Where the list came from (URL) and when it was checked. */
+  inciSource?: string;
+};
+
+/** The ingredient (as labelled by the ingredient check) each plan step needs a product to contain. */
+export const STEP_TARGET: Record<string, string | undefined> = {
+  "Sunscreen SPF 30+ with no white cast": "UV filters",
+  "Benzoyl peroxide wash (2.5–4%)": "Benzoyl peroxide",
+  "Azelaic acid 10%": "Azelaic acid",
+  "Niacinamide 5–10%": "Niacinamide",
+  "Tranexamic acid serum": "Tranexamic acid",
+  "Adapalene 0.1% gel": "Retinoid",
+  "Mandelic acid": "Gentle acids (AHA)",
+  "Vitamin C": "Vitamin C",
+};
 
 export const PRODUCTS: Record<string, Product[]> = {
   "Gentle, non-stripping cleanser": [
@@ -52,11 +77,3 @@ export const PRODUCTS: Record<string, Product[]> = {
     { brand: "The Ordinary", name: "Ascorbyl Glucoside Solution 12%", note: "Gentle form for sensitive skin" },
   ],
 };
-
-/** Products for a plan step, preferring ones that match the user's skin type. */
-export function productsFor(step: string, skinType?: Record<string, string>): Product[] {
-  const list = PRODUCTS[step] ?? [];
-  const oily = Object.values(skinType ?? {}).some((t) => /oily/i.test(t));
-  const dry = Object.values(skinType ?? {}).some((t) => /dry/i.test(t));
-  return list.filter((p) => !p.forSkin || (p.forSkin === "oily" ? oily || !dry : dry || !oily)).slice(0, 3);
-}
