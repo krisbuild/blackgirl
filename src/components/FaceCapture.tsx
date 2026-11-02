@@ -18,6 +18,11 @@ const TIPS = [
     body: "Pull braids, locs, twists or edges back off your forehead and cheeks. A bonnet or headwrap is fine if your hairline shows.",
   },
   {
+    icon: "◍",
+    title: "Blot the shine",
+    body: "Press a tissue on your forehead, nose and cheeks. Glare from oily skin can hide marks and spots from the scan.",
+  },
+  {
     icon: "◌",
     title: "Bare skin",
     body: "Skip foundation and tinted sunscreen for this photo, so we read your real skin.",

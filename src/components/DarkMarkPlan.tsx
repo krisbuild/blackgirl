@@ -1,15 +1,27 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { updateScanNote, weeksSince, type Analysis } from "@/lib/journal";
+import { useMemo } from "react";
+import { weeksSince, type Analysis, type ScanNote } from "@/lib/journal";
 import { buildPlan, markAgeMonths, ONSETS, type Onset } from "@/lib/plan";
 
 const score = (a: Analysis, k: string) => a.concerns.find((c) => c.concern === k)?.rawScore;
 
 /** "How long have they been there?" + the personal Dark Mark Plan. */
-export function DarkMarkPlan({ analysis, scanId, firstScan }: { analysis: Analysis; scanId?: string; firstScan?: string | null }) {
-  const [onset, setOnset] = useState<Onset | undefined>();
-  const [saveNote, setSaveNote] = useState<string | null>(null);
+export function DarkMarkPlan({
+  analysis,
+  firstScan,
+  note,
+  onNote,
+  noteStatus,
+}: {
+  analysis: Analysis;
+  firstScan?: string | null;
+  note: ScanNote;
+  onNote: (patch: ScanNote) => void;
+  noteStatus?: string | null;
+}) {
+  const onset = note.markOnset as Onset | undefined;
+  const saveNote = noteStatus;
   const trackedWeeks = weeksSince(firstScan);
 
   const plan = useMemo(
@@ -22,22 +34,15 @@ export function DarkMarkPlan({ analysis, scanId, firstScan }: { analysis: Analys
         texture: score(analysis, "texture"),
         onset,
         trackedWeeks,
+        darkMarksFeel: note.feel?.age_spot,
+        acneFeel: note.feel?.acne,
         skinType: analysis.skinType,
       }),
-    [analysis, onset, trackedWeeks],
+    [analysis, onset, trackedWeeks, note.feel],
   );
   const age = markAgeMonths(onset, trackedWeeks);
 
-  const choose = async (o: Onset) => {
-    setOnset(o);
-    if (!scanId) return;
-    try {
-      await updateScanNote(scanId, { markOnset: o });
-      setSaveNote("Saved with this scan");
-    } catch {
-      setSaveNote("Couldn't save your answer, but your plan is updated");
-    }
-  };
+  const choose = (o: Onset) => onNote({ markOnset: o });
 
   return (
     <div className="mt-8">

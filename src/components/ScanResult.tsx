@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { prepareForAnalysis } from "@/lib/image";
 import { BAND_LABEL, bandOf, insightsFrom, type Band, type Insight } from "@/lib/insights";
 import { whereSummary, type MarkStats } from "@/lib/marks-shared";
-import { firstScanDate, saveScan, type Analysis } from "@/lib/journal";
+import { firstScanDate, saveScan, updateScanNote, type Analysis, type Feel, type ScanNote } from "@/lib/journal";
 import { DarkMarkPlan } from "./DarkMarkPlan";
 import { SkinViewer } from "./SkinViewer";
 
@@ -175,10 +175,26 @@ function Results({
   const darkMarks = insights.find((i) => i.concern === "age_spot");
   const acne = insights.find((i) => i.concern === "acne");
   const skinType = analysis.skinType?.whole;
+  const [note, setNote] = useState<ScanNote>({});
+  const [noteStatus, setNoteStatus] = useState<string | null>(null);
+  const patchNote = (patch: ScanNote) => {
+    const next: ScanNote = { ...note, ...patch, feel: { ...note.feel, ...patch.feel } };
+    setNote(next);
+    if (!scanId) return;
+    updateScanNote(scanId, next)
+      .then(() => setNoteStatus("Saved with this scan"))
+      .catch(() => setNoteStatus("Couldn't save your answer, but your plan is updated"));
+  };
+  const feel = (k: "age_spot" | "acne") => ({ value: note.feel?.[k], set: (f: Feel) => patchNote({ feel: { [k]: f } }) });
 
   return (
     <section className="mx-auto max-w-md px-5 pb-12 pt-8">
-      <p className="text-xs uppercase tracking-[0.3em] text-honey">Your scan</p>
+      <p className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-honey">
+        Your scan
+        {analysis.quality === "hd" && (
+          <span className="rounded-full bg-good/15 px-2 py-0.5 text-[10px] tracking-wider text-good">HD analysis</span>
+        )}
+      </p>
       <h2 className="mt-2 font-display text-[2rem] leading-tight">
         Your dark marks, <em className="text-sun">up close</em>
       </h2>
@@ -203,12 +219,12 @@ function Results({
           </div>
         ))}
       </div>
-      {darkMarks && <MarkSummary label="dark mark" i={darkMarks} stats={analysis.marks?.darkMarks} />}
+      {darkMarks && <MarkSummary label="dark mark" i={darkMarks} stats={analysis.marks?.darkMarks} feel={feel("age_spot")} />}
       {darkMarks && <p className="mt-2 leading-relaxed text-sand">{darkMarks.says[darkMarks.band]}</p>}
-      {acne && <MarkSummary label="acne spot" i={acne} stats={analysis.marks?.acne} />}
+      {acne && <MarkSummary label="acne spot" i={acne} stats={analysis.marks?.acne} feel={feel("acne")} />}
       {acne && <p className="mt-2 text-sm leading-relaxed text-muted">{acne.says[acne.band]}</p>}
 
-      <DarkMarkPlan analysis={analysis} scanId={scanId} firstScan={firstScan} />
+      <DarkMarkPlan analysis={analysis} firstScan={firstScan} note={note} onNote={patchNote} noteStatus={noteStatus} />
 
       {/* everything else */}
       <h3 className="mt-10 font-display text-xl">The rest of your skin</h3>
@@ -265,7 +281,17 @@ function InsightRow({ i, compact = false }: { i: Insight; compact?: boolean }) {
 }
 
 /** "YouCam found 14 dark marks, mostly on your left cheek. They cover 0.3% of your face." */
-function MarkSummary({ label, i, stats }: { label: string; i: Insight; stats?: MarkStats }) {
+function MarkSummary({
+  label,
+  i,
+  stats,
+  feel,
+}: {
+  label: string;
+  i: Insight;
+  stats?: MarkStats;
+  feel: { value?: Feel; set: (f: Feel) => void };
+}) {
   if (i.count == null) return null;
   const where = stats ? whereSummary(stats.zones) : null;
   const plural = i.count === 1 ? label : `${label}s`;
@@ -277,6 +303,34 @@ function MarkSummary({ label, i, stats }: { label: string; i: Insight; stats?: M
         {where ? `, ${where}` : ""}.
         {i.coveragePct != null && i.coveragePct >= 0.1 ? ` Together they cover ${i.coveragePct}% of your face.` : ""}
       </p>
+      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+        <span className="text-xs text-muted">Does this match your mirror?</span>
+        {(
+          [
+            ["right", "About right"],
+            ["more", `I have more`],
+            ["fewer", "Fewer"],
+          ] as const
+        ).map(([v, l]) => (
+          <button
+            key={v}
+            onClick={() => feel.set(v)}
+            aria-pressed={feel.value === v}
+            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 transition ${
+              feel.value === v ? "bg-sun text-espresso ring-sun" : "text-sand ring-mahogany"
+            }`}
+          >
+            {l}
+          </button>
+        ))}
+      </div>
+      {feel.value === "more" && (
+        <p className="mt-2 text-xs leading-relaxed text-sand">
+          Thank you. AI can miss small, flat or shine-covered spots, especially in low-resolution photos. Your plan now
+          assumes more {label}s than we counted. For a sharper read next time: blot any shine, face a window, and use your
+          phone&apos;s main camera so we can run YouCam&apos;s finer HD analysis.
+        </p>
+      )}
       {diluted && (
         <p className="mt-1.5 text-xs text-muted">
           Why the high score? YouCam scores your whole face, so a cluster of marks barely moves it. Counting the marks

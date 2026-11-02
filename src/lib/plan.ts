@@ -23,6 +23,9 @@ export type PlanInput = {
   /** Counted on YouCam's masks; used when worse than the whole-face score. */
   darkMarkCount?: number;
   acneCount?: number;
+  /** The user's own check: does the count match what they see in the mirror? */
+  darkMarksFeel?: "right" | "more" | "fewer";
+  acneFeel?: "right" | "more" | "fewer";
   texture?: number;
   onset?: Onset;
   /** Weeks since the user's first scan in their journal. */
@@ -62,10 +65,13 @@ export function buildPlan(input: PlanInput): Plan {
   // If the user tells us their marks appeared at some point, believe them: the camera can
   // under-read marks on deep skin, so never plan as if there were none.
   const userSeesMarks = !!input.onset && input.onset !== "unsure";
-  const dm: Band | undefined = userSeesMarks && (!scored || scored === "clear") ? "mild" : scored;
+  let dm: Band | undefined = userSeesMarks && (!scored || scored === "clear") ? "mild" : scored;
+  // AI misses small, flat or glare-hidden spots; when the user says there are more, plan for more.
+  if (input.darkMarksFeel === "more") dm = dm ? worseBand(dm, "moderate") : "moderate";
   const acneScore = input.acne != null ? bandOf(input.acne) : undefined;
   const acneCount = bandFromCount("acne", input.acneCount);
-  const acne = acneScore && acneCount ? worseBand(acneScore, acneCount) : (acneScore ?? acneCount);
+  let acne = acneScore && acneCount ? worseBand(acneScore, acneCount) : (acneScore ?? acneCount);
+  if (input.acneFeel === "more") acne = acne ? worseBand(acne, "moderate") : "moderate";
   const texture = input.texture != null ? bandOf(input.texture) : undefined;
   const age = markAgeMonths(input.onset, input.trackedWeeks);
   const oily = Object.values(input.skinType ?? {}).some((t) => /oily/i.test(t));
@@ -90,12 +96,14 @@ export function buildPlan(input: PlanInput): Plan {
           ? "Expect gradual change over about 3–6 months. Weekly scans will show it before your eyes do."
           : "Settled marks often take 6–12 months or more. Consistency matters more than strength.";
 
-  const headline =
-    dm == null || dm === "clear"
-      ? "Keep your skin even and protected"
-      : activeAcne
-        ? "Calm the breakouts, then fade the marks"
-        : "Fade your dark marks, step by step";
+  const marksShow = dm != null && dm !== "clear";
+  const headline = activeAcne
+    ? marksShow
+      ? "Calm the breakouts, then fade the marks"
+      : "Calm the breakouts before they leave marks"
+    : marksShow
+      ? "Fade your dark marks, step by step"
+      : "Keep your skin even and protected";
 
   const phases: PlanPhase[] = [];
 

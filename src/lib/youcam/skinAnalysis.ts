@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readCache, writeCache } from "./cache";
 import { runTask, uploadImage, YouCamError } from "./client";
 import { alphaBox, countMarks, decodeMask } from "./marks";
+import { imageSize } from "./imageSize";
 import type { MarkStats } from "../marks-shared";
 
 /**
@@ -30,6 +31,27 @@ export const SKIN_ACTIONS = [
 ] as const;
 export type SkinConcern = (typeof SKIN_ACTIONS)[number];
 
+/**
+ * HD equivalents: finer detection of small acne and marks, needs a short side >= 1080 px.
+ * Costs 20 credits for 9-12 concerns vs 14 for SD. HD and SD can't be mixed in one task.
+ */
+export const HD_ACTIONS = [
+  "hd_age_spot",
+  "hd_acne",
+  "hd_texture",
+  "hd_redness",
+  "hd_radiance",
+  "hd_pore",
+  "hd_oiliness",
+  "hd_moisture",
+  "hd_dark_circle",
+  "hd_skin_type",
+] as const;
+export const HD_MIN_SHORT_SIDE = 1080;
+
+/** HD concern names that differ from our SD names after stripping "hd_". */
+const HD_RENAME: Record<string, string> = { dark_circle: "dark_circle_v2" };
+
 export interface ConcernScore {
   concern: string;
   /** 1-100, higher = clearer/healthier. The docs say this is the honest number. */
@@ -50,6 +72,8 @@ export interface SkinAnalysisResult {
   skinAge?: number;
   /** e.g. { whole: "Oily", t_zone: "Oily", u_zone: "Normal" } when skin_type was requested */
   skinType?: Record<string, string>;
+  /** "hd" when the photo was sharp enough for YouCam's finer HD analysis. */
+  quality?: "hd" | "sd";
   /** Counted from YouCam's own masks: how many, how much of the face, and where. */
   marks?: { darkMarks?: MarkStats; acne?: MarkStats };
 }
@@ -82,13 +106,18 @@ export function parseSkinResults(results: unknown): Omit<SkinAnalysisResult, "so
       skinAge = item.score;
       continue;
     }
-    if (item.type === "skin_type") {
+    const type = item.type.replace(/^hd_/, "");
+    if (type === "skin_type") {
       if (item.skin_type) (skinType ??= {})[item.region ?? "whole"] = item.skin_type;
       continue;
     }
     if (typeof item.raw_score !== "number" && typeof item.ui_score !== "number") continue;
+    // HD pores/wrinkles also report sub-regions; keep the whole-face reading only.
+    if (item.region && item.region !== "whole" && item.region !== "all") continue;
+    const name = HD_RENAME[type] && item.type.startsWith("hd_") ? HD_RENAME[type] : type;
+    if (out.some((o) => o.concern === name)) continue;
     out.push({
-      concern: item.type.replace(/^hd_/, ""),
+      concern: name,
       rawScore: Math.round((item.raw_score ?? item.ui_score ?? 0) * 10) / 10,
       uiScore: Math.round(item.ui_score ?? item.raw_score ?? 0),
       maskUrl: item.mask_urls?.[0],
@@ -106,10 +135,14 @@ export async function analyzeSkin(
   image: Uint8Array,
   contentType: "image/jpeg" | "image/png",
 ): Promise<SkinAnalysisResult> {
+  const size = imageSize(image);
+  const hd = !!size && Math.min(size.width, size.height) >= HD_MIN_SHORT_SIDE;
+  const actions: readonly string[] = hd ? HD_ACTIONS : SKIN_ACTIONS;
+
   // Same photo + same actions = same answer: never spend units twice.
   const key = createHash("sha256")
     .update(image)
-    .update(SKIN_ACTIONS.join(","))
+    .update(actions.join(","))
     .digest("hex");
   const cached = await readCache<{ parsed: SkinAnalysisResult }>("skin", key);
   // Mask URLs expire after ~2 h; scores stay valid, so the cache is still useful.
@@ -129,7 +162,7 @@ export async function analyzeSkin(
   const fileId = await uploadImage("skin-analysis", image, contentType);
   const results = await runTask("skin-analysis", {
     src_file_id: fileId,
-    dst_actions: SKIN_ACTIONS,
+    dst_actions: actions,
     miniserver_args: { enable_mask_overlay: false },
     format: "json",
   });
@@ -137,6 +170,7 @@ export async function analyzeSkin(
     ...parseSkinResults(results),
     source: "live",
     analyzedAt: new Date().toISOString(),
+    quality: hd ? "hd" : "sd",
   };
   parsed.marks = await measureMarks(parsed);
   for (const c of parsed.concerns) {

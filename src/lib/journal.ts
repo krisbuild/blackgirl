@@ -12,6 +12,7 @@ export type Analysis = {
   skinAge?: number;
   skinType?: Record<string, string>;
   marks?: { darkMarks?: MarkStats; acne?: MarkStats };
+  quality?: "hd" | "sd";
 };
 
 export type Scan = {
@@ -26,7 +27,8 @@ export type Scan = {
 };
 
 /** Small structured details kept in the scan's `note` column (max 500 chars). */
-export type ScanNote = { markOnset?: string };
+export type Feel = "right" | "more" | "fewer";
+export type ScanNote = { markOnset?: string; feel?: Partial<Record<"age_spot" | "acne", Feel>> };
 
 export function readNote(s: Pick<Scan, "note">): ScanNote {
   try {

@@ -43,6 +43,12 @@ describe("buildPlan", () => {
     expect(p.phases.some((ph) => ph.title === "Fade")).toBe(true);
   });
 
+  it("plans for more acne when the user says the scan missed some", () => {
+    const p = buildPlan({ darkMarks: 87, acne: 80, acneCount: 9, acneFeel: "more" });
+    expect(p.headline).toMatch(/Calm the breakouts/);
+    expect(p.dermatologist.show).toBe(true);
+  });
+
   it("always starts with sunscreen", () => {
     const p = buildPlan({ darkMarks: 90, acne: 90 });
     expect(p.phases[0].steps.some((s) => /Sunscreen/.test(s.name))).toBe(true);

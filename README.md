@@ -33,6 +33,22 @@ line. The same scan reads as **14 dark marks** (7 left cheek, 4 right cheek, 2 f
 1 jaw), covering 0.3% of the face, plus **3 acne spots**. The count is what the journal tracks
 week to week, and it drives the plan whenever it is worse than the score.
 
+### Accuracy on deep skin (real YouCam calls, SD mode)
+
+| Photo | Dark-mark score | Dark marks counted | Acne score | Acne counted | Redness |
+|---|---|---|---|---|---|
+| Real deep-skin selfie (team member, 543×800, some cheek glare) | 86.6 "clear" | **44** (25 forehead, 9 + 7 cheeks) | 78.4 | **9**, *user reports more* | **100** |
+| AI-generated portrait with visible cheek marks (713×951) | 93.8 "clear" | **14** (11 on cheeks) | 94.8 | 3 | **100** |
+| Team member selfie (earlier test) | 86.5 | n/a | 87.2 | n/a | **100** |
+
+What we learned:
+- **Scores hide marks.** In both photos with visible marks, the dark-mark score read "clear" while YouCam's own mask
+  marked 14 and 44 spots. Shine leads with the count.
+- **Redness reads 100 on every deep-skin photo** we tried, so the app labels it as unreliable on melanin-rich skin.
+- **Acne was under-counted** on the real selfie (the user sees more than 9). Likely causes: low resolution and glare.
+  Shine now (1) switches to YouCam's **HD** analysis automatically when the photo's short side is ≥ 1080 px,
+  (2) asks "Does this match your mirror?" and plans for more when the user says so, and (3) tells users to blot shine.
+
 Redness is flagged in-app as less reliable on deep skin. On our first real scan, YouCam returned
 a perfect 100 for redness on deep skin.
 
