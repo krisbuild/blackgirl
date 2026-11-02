@@ -69,7 +69,15 @@ export function SkinViewer({
           )}
           {mask && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={mask} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-90" />
+            <img
+              key={mask}
+              src={mask}
+              alt=""
+              aria-hidden="true"
+              // YouCam map links expire after ~2 h; hide a dead link rather than show a broken image.
+              onError={(e) => (e.currentTarget.style.display = "none")}
+              className="absolute inset-0 h-full w-full object-cover opacity-90"
+            />
           )}
           {/* a ring on every mark counted from YouCam's map */}
           {rings && (

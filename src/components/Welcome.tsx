@@ -42,7 +42,7 @@ export function Welcome({ onStart, onJournal, onProduct }: { onStart: () => void
           onClick={onStart}
           className="w-full rounded-full bg-gradient-to-r from-honey to-sun px-6 py-4 text-lg font-semibold text-espresso shadow-[0_10px_40px_-10px_rgba(246,196,83,0.7)] transition active:scale-[0.98]"
         >
-          Start my first scan
+          Start a scan
         </button>
         <button onClick={onProduct} className="mt-3 w-full rounded-full px-6 py-3.5 font-semibold text-sand ring-1 ring-mahogany transition active:scale-[0.98]">
           Check a skincare product
