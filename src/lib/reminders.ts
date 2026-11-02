@@ -1,6 +1,6 @@
 /**
  * Daily reminders as a calendar file (.ics). Websites can't send scheduled notifications while
- * closed (iPhone especially), but a phone calendar alert fires reliably, so Shine adds the
+ * closed (iPhone especially), but a phone calendar alert fires reliably, so Seen adds the
  * reminders there. Times are "floating" (no time zone), so they ring at the same local time anywhere.
  */
 export type ReminderSettings = {
@@ -53,7 +53,7 @@ function event(uid: string, start: string, hhmm: string, title: string, body: st
 
 export function buildReminderCalendar(s: ReminderSettings, now = new Date()): string {
   const stamp = now.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Shine//Daily reminders//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "X-WR-CALNAME:Shine reminders"];
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Seen//Daily reminders//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "X-WR-CALNAME:Seen reminders"];
   if (s.sunscreen && TIME_RE.test(s.sunscreen)) {
     lines.push(
       ...event(`sunscreen-${s.start}`, s.start, s.sunscreen.replace(":", ""), "☀ Apply sunscreen", "SPF 30+ on face, neck and ears. Daily sunscreen is the biggest factor in fading dark marks.", stamp),
@@ -64,7 +64,7 @@ export function buildReminderCalendar(s: ReminderSettings, now = new Date()): st
   }
   if (s.waterEvery && s.waterFrom && s.waterTo && TIME_RE.test(s.waterFrom) && TIME_RE.test(s.waterTo)) {
     for (const t of waterTimes(s.waterFrom, s.waterTo, s.waterEvery)) {
-      lines.push(...event(`water-${t}-${s.start}`, s.start, t, "💧 Drink a glass of water", "A small daily habit. Shine reminder.", stamp));
+      lines.push(...event(`water-${t}-${s.start}`, s.start, t, "💧 Drink a glass of water", "A small daily habit. Seen reminder.", stamp));
     }
   }
   lines.push("END:VCALENDAR");

@@ -12,14 +12,14 @@ export function Welcome({ onStart, onJournal, onProduct }: { onStart: () => void
   return (
     <section className="mx-auto flex min-h-dvh max-w-md flex-col px-6 pb-10 pt-10">
       <header className="rise flex items-center justify-between text-sm text-muted">
-        <span className="font-display text-lg tracking-wide text-sand">Shine</span>
+        <span className="font-display text-lg tracking-wide text-sand">Seen</span>
         <button onClick={onJournal} className="rounded-full px-3 py-1 text-sand ring-1 ring-mahogany">
           My journal
         </button>
       </header>
 
       <p className="rise mt-6 text-center font-display text-6xl font-bold leading-none tracking-tight text-sun drop-shadow-[0_4px_24px_rgba(246,196,83,0.35)]">
-        Shine
+        Seen
       </p>
 
       <div className="relative mx-auto mt-4 w-64 max-w-full">
