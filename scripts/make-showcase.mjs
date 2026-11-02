@@ -1,15 +1,14 @@
 // Run a REAL YouCam skin analysis on one portrait and save it as the preview-screen showcase.
 //
-//   npm run showcase -- path/to/portrait.jpg "AI-generated portrait"
+//   npm run showcase            (defaults to public/showcase/portrait.jpg)
 //
-// Saves into public/showcase/: the resized photo YouCam scored, plus YouCam's detection masks
-// for dark marks (age_spot), acne and texture. Writes the scores into src/data/showcase.ts.
+// Saves into public/showcase/: the resized photo YouCam scored (photo.jpg), plus YouCam's detection masks
+// for dark marks (age_spot), acne and texture. Writes them into SCAN in src/data/showcase.ts.
 // Costs one skin-analysis task. Needs YOUCAM_API_KEY in .env.local.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const [, , photoPath, credit = "AI-generated portrait"] = process.argv;
-if (!photoPath) throw new Error('Usage: npm run showcase -- <photo.jpg|png> ["credit text"]');
+const photoPath = process.argv[2] ?? "public/showcase/portrait.jpg";
 const KEY = process.env.YOUCAM_API_KEY;
 if (!KEY) throw new Error("YOUCAM_API_KEY is not set (add it to .env.local)");
 const BASE = process.env.YOUCAM_BASE_URL ?? "https://yce-api-01.makeupar.com";
@@ -78,11 +77,11 @@ for (const o of out) {
 }
 const skinType = out.find((o) => o.type === "skin_type" && (o.region ?? "whole") === "whole")?.skin_type;
 
-const data = { image, masks, scores, skinType, credit, analyzedAt: new Date().toISOString() };
+const data = { image, masks, scores, skinType, analyzedAt: new Date().toISOString() };
 const tsPath = path.join("src", "data", "showcase.ts");
 const ts = await readFile(tsPath, "utf8");
 await writeFile(
   tsPath,
-  ts.replace(/export const SHOWCASE: Showcase \| null = [\s\S]*;\s*$/, `export const SHOWCASE: Showcase | null = ${JSON.stringify(data, null, 2)};\n`),
+  ts.replace(/export const SCAN: ShowcaseScan \| null = [\s\S]*;\s*$/, `export const SCAN: ShowcaseScan | null = ${JSON.stringify(data, null, 2)};\n`),
 );
 console.log("done:", JSON.stringify({ scores, skinType, masks: Object.keys(masks) }));

@@ -1,29 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SHOWCASE } from "@/data/showcase";
+import { PORTRAIT, SCAN, type ShowcaseConcern } from "@/data/showcase";
 
 /**
- * "Live scan" viewer for the preview screen.
+ * "Live scan" viewer for the preview screen, over an AI-generated portrait.
  *
- * With SHOWCASE data (from `npm run showcase`), it shows a real YouCam analysis: the photo YouCam
- * scored, YouCam's own detection masks cycling over it, and the real raw scores.
- * Without it, an illustrated face stands in and no numbers are shown.
+ * With SCAN data (from `npm run showcase`) it shows a real YouCam analysis of that portrait:
+ * YouCam's own detection masks cycling over the photo, and the real raw scores.
+ * Without it, the overlay shows where each concern is read, and no numbers.
  *
  * Every layer shares one 300x400 coordinate space (photo and SVG both "cover" a 3:4 frame).
  */
 
 const W = 300;
 const H = 400;
-const FACE = { cx: 150, cy: 200, rx: 82, ry: 112 };
+const FACE = PORTRAIT.face;
 
-type Concern = "age_spot" | "texture" | "acne";
+type Concern = ShowcaseConcern;
 
-const CALLOUTS: Array<{ key: Concern; label: string; x: number; y: number; side: "l" | "r" }> = [
-  { key: "age_spot", label: "Dark marks", x: 112, y: 222, side: "l" },
-  { key: "texture", label: "Texture", x: 190, y: 236, side: "r" },
-  { key: "acne", label: "Breakouts", x: 168, y: 150, side: "r" },
-];
+const CALLOUTS = PORTRAIT.callouts;
 
 /** A soft face mesh: points on concentric ellipses, joined ring-to-ring. */
 function buildMesh() {
@@ -55,51 +51,8 @@ function buildMesh() {
 }
 const MESH = buildMesh();
 
-function IllustratedFace() {
-  return (
-    <g>
-      <defs>
-        <linearGradient id="sc-skin" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#80502f" />
-          <stop offset="1" stopColor="#4a2a1c" />
-        </linearGradient>
-        <radialGradient id="sc-light" cx="38%" cy="30%" r="60%">
-          <stop offset="0" stopColor="#f6c453" stopOpacity="0.25" />
-          <stop offset="1" stopColor="#f6c453" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      {/* afro */}
-      <circle cx="150" cy="150" r="118" fill="#2c170f" />
-      <circle cx="68" cy="128" r="50" fill="#331b11" />
-      <circle cx="232" cy="128" r="50" fill="#331b11" />
-      <circle cx="150" cy="58" r="56" fill="#331b11" />
-      {/* neck + shoulders */}
-      <path d="M118 300 L118 340 Q150 352 182 340 L182 300 Z" fill="#4a2a1c" />
-      <path d="M40 400 Q60 338 150 336 Q240 338 260 400 Z" fill="#c4623a" opacity="0.85" />
-      {/* face */}
-      <ellipse cx={FACE.cx} cy={FACE.cy} rx={FACE.rx} ry={FACE.ry} fill="url(#sc-skin)" />
-      <ellipse cx={FACE.cx} cy={FACE.cy} rx={FACE.rx} ry={FACE.ry} fill="url(#sc-light)" />
-      {/* features */}
-      <path d="M112 182 q14 -9 28 0" stroke="#24120b" strokeWidth="4" fill="none" strokeLinecap="round" />
-      <path d="M160 182 q14 -9 28 0" stroke="#24120b" strokeWidth="4" fill="none" strokeLinecap="round" />
-      <path d="M150 196 q-9 28 0 34 q9 -6 0 -34" fill="#3d2216" opacity="0.8" />
-      <path d="M128 262 q22 14 44 0" stroke="#2a1309" strokeWidth="5" fill="none" strokeLinecap="round" />
-      {/* a few soft dark marks */}
-      {[
-        [108, 226],
-        [118, 236],
-        [100, 240],
-        [194, 244],
-        [172, 150],
-      ].map(([x, y]) => (
-        <circle key={`${x}-${y}`} cx={x} cy={y} r="3.2" fill="#2e170e" opacity="0.65" />
-      ))}
-    </g>
-  );
-}
-
 export function ScanShowcase({ className = "" }: { className?: string }) {
-  const real = SHOWCASE;
+  const real = SCAN;
   const maskKeys = (real ? (Object.keys(real.masks) as Concern[]) : []).filter((k) => real?.masks[k]);
   const [active, setActive] = useState(0);
 
@@ -115,10 +68,12 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
   return (
     <div className={`relative overflow-hidden rounded-[1.75rem] bg-[#140a06] ring-1 ring-mahogany ${className}`}>
       {/* base: real photo or illustration */}
-      {real ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={real.image} alt={`${real.credit}, scanned by YouCam AI Skin Analysis`} className="absolute inset-0 h-full w-full object-cover" />
-      ) : null}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={real?.image ?? PORTRAIT.image}
+        alt={`${PORTRAIT.credit}${real ? ", scanned by YouCam AI Skin Analysis" : ""}`}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
 
       {/* YouCam's own detection masks */}
       {real &&
@@ -138,7 +93,7 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
         preserveAspectRatio="xMidYMid slice"
         className="absolute inset-0 h-full w-full"
         role="img"
-        aria-label={real ? "Real YouCam skin scan" : "Illustration of a skin scan"}
+        aria-label={real ? "Real YouCam skin scan overlay" : "Skin scan overlay"}
       >
         <defs>
           <linearGradient id="sc-beam" x1="0" y1="0" x2="0" y2="1">
@@ -148,21 +103,20 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
           </linearGradient>
           <radialGradient id="sc-vignette" cx="50%" cy="48%" r="70%">
             <stop offset="0.55" stopColor="#000" stopOpacity="0" />
-            <stop offset="1" stopColor="#000" stopOpacity="0.55" />
+            <stop offset="1" stopColor="#000" stopOpacity="0.6" />
           </radialGradient>
           <clipPath id="sc-face">
             <ellipse cx={FACE.cx} cy={FACE.cy} rx={FACE.rx + 4} ry={FACE.ry + 4} />
           </clipPath>
         </defs>
 
-        {!real && <IllustratedFace />}
-        <rect width={W} height={H} fill="url(#sc-vignette)" />
+                <rect width={W} height={H} fill="url(#sc-vignette)" />
 
         {/* face mesh */}
         <g clipPath="url(#sc-face)">
-          <path d={MESH.d} className="scan-mesh" fill="none" stroke="#f6c453" strokeWidth="0.6" opacity="0.45" />
+          <path d={MESH.d} className="scan-mesh" fill="none" stroke="#f6c453" strokeWidth="0.5" opacity="0.4" />
           {MESH.nodes.map(([x, y], i) => (
-            <circle key={i} cx={x} cy={y} r="1.1" fill="#fff3c9" opacity="0.7" />
+            <circle key={i} cx={x} cy={y} r="0.9" fill="#fff3c9" opacity="0.6" />
           ))}
         </g>
 
@@ -203,29 +157,37 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
           />
         ))}
 
-        {/* callouts */}
+        {/* callouts: a dark pill keeps labels readable over bright photos */}
         {CALLOUTS.map((c) => {
           const on = c.key === activeKey;
-          const tx = c.side === "l" ? 26 : W - 26;
           const score = real?.scores[c.key];
+          const text = c.label.toUpperCase();
+          const pillW = text.length * 7 + 16 + (score != null ? 26 : 0);
+          const pillH = 20;
+          const px = c.side === "l" ? 36 : W - 36 - pillW;
+          const py = c.y - 36;
+          const anchorX = c.side === "l" ? px + pillW : px;
           return (
-            <g key={c.key} className="transition-opacity duration-500" opacity={on ? 1 : 0.35}>
+            <g key={c.key} className="transition-opacity duration-500" opacity={on ? 1 : 0.55}>
               <circle cx={c.x} cy={c.y} r={on ? 11 : 8} fill="none" stroke="#f6c453" strokeWidth="2" className={on ? "scan-ping" : ""} />
               <circle cx={c.x} cy={c.y} r="3" fill="#f6c453" />
-              <path d={`M${c.x},${c.y}L${(c.x + tx) / 2},${c.y - 16}H${tx}`} fill="none" stroke="#f6c453" strokeWidth="1" />
-              <text
-                x={tx}
-                y={c.y - 22}
-                textAnchor={c.side === "l" ? "start" : "end"}
-                fontSize="11"
-                fontWeight="700"
-                fill="#fbf1e3"
-                style={{ letterSpacing: "0.04em" }}
-              >
-                {c.label.toUpperCase()}
+              <path d={`M${c.x},${c.y}L${anchorX},${py + pillH / 2}`} fill="none" stroke="#f6c453" strokeWidth="1.2" />
+              <rect
+                x={px}
+                y={py}
+                width={pillW}
+                height={pillH}
+                rx={pillH / 2}
+                fill="#1d0f0a"
+                fillOpacity="0.82"
+                stroke={on ? "#f6c453" : "#4a2618"}
+                strokeWidth="1"
+              />
+              <text x={px + 8} y={py + 14} fontSize="10.5" fontWeight="700" fill="#fbf1e3" style={{ letterSpacing: "0.06em" }}>
+                {text}
               </text>
               {score != null && (
-                <text x={tx} y={c.y - 6} textAnchor={c.side === "l" ? "start" : "end"} fontSize="16" fontWeight="700" fill="#f6c453">
+                <text x={px + pillW - 8} y={py + 14.5} textAnchor="end" fontSize="12" fontWeight="800" fill="#f6c453">
                   {Math.round(score)}
                 </text>
               )}
@@ -260,7 +222,7 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
           <div className="scan-progress h-full rounded-full bg-gradient-to-r from-honey to-sun" />
         </div>
         <p className="mt-1.5 text-[9px] text-sand/70">
-          {real ? `${real.credit} · real YouCam scan` : "Illustration · your scan will look like this"}
+          {real ? `${PORTRAIT.credit} · real YouCam scan` : `${PORTRAIT.credit} · your scan will look like this`}
         </p>
       </div>
     </div>
