@@ -34,6 +34,10 @@ export async function GET() {
     hadExtraWhitespaceOrQuotes: raw !== key,
     containsSpaces: /\s/.test(key),
     containsMaskDotsOrOddCharacters: /[^\x21-\x7e]/.test(key),
+    // Enough to recognise which key is live, not enough to use it.
+    last4: key.slice(-4),
+    oddCharacterPositions: [...key].flatMap((c, i) => (/[\x21-\x7e]/.test(c) ? [] : [i + 1])).slice(0, 10),
+    deployedCommit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
     looksLikeWholeLine: key.startsWith("YOUCAM_API_KEY"),
   };
   const youcam = key && !/\s/.test(key)
