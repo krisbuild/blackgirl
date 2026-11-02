@@ -80,7 +80,8 @@ const CAUTION: Array<Rule & { when?: (p: SkinProfile) => boolean }> = [
   {
     id: "citrus",
     label: "Citrus oils",
-    match: /citrus (limon|aurantium|aurantifolia|paradisi|bergamia)|lemon (peel )?oil|bergamot|lime oil|grapefruit/,
+    // essential oils only: citrus fruit extracts and juices aren't photosensitising the same way
+    match: /citrus (limon|aurantium|aurantifolia|paradisi|bergamia)[^,]*\boil\b|lemon (peel )?oil|bergamot[^,]*\boil\b|lime oil|grapefruit[^,]*\boil\b/,
     why: "Can make skin more sun-sensitive, which works against fading dark marks.",
   },
   {
@@ -101,7 +102,8 @@ const CAUTION: Array<Rule & { when?: (p: SkinProfile) => boolean }> = [
 const GOOD: Array<Rule & { helps: Array<"darkMarks" | "acne" | "hydration" | "sun"> }> = [
   { id: "niacinamide", label: "Niacinamide", match: /niacinamide/, why: "Evens tone and balances oil.", helps: ["darkMarks", "acne"] },
   { id: "azelaic", label: "Azelaic acid", match: /azelaic|azeloyl/, why: "Fades dark marks and calms breakouts.", helps: ["darkMarks", "acne"] },
-  { id: "txa", label: "Tranexamic acid", match: /tranexamic/, why: "Targets stubborn discoloration.", helps: ["darkMarks"] },
+  // tranexamic acid and derivatives (e.g. cetyl tranexamate mesylate)
+  { id: "txa", label: "Tranexamic acid", match: /tranexam/, why: "Targets stubborn discoloration.", helps: ["darkMarks"] },
   {
     id: "vitc",
     label: "Vitamin C",

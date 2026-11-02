@@ -48,6 +48,7 @@ export function DarkMarkPlan({
         pregnant: note.pregnant,
         sensitive: note.sensitive,
         warningSigns: note.warningSigns as WarningSign[] | undefined,
+        budget: note.budget,
       },
     };
     const ctrl = new AbortController();
@@ -183,6 +184,22 @@ export function DarkMarkPlan({
             {plan.timeline}
           </p>
 
+          <div className="mt-4 flex flex-wrap items-center gap-1.5">
+            <span className="text-xs text-muted">Budget:</span>
+            {(
+              [
+                [undefined, "Any"],
+                ["$", "Budget $"],
+                ["$$", "Mid-range $$"],
+                ["$$$", "Premium $$$"],
+              ] as const
+            ).map(([v, l]) => (
+              <Chip key={l} on={note.budget === v} onClick={() => onNote({ budget: v })}>
+                {l}
+              </Chip>
+            ))}
+          </div>
+
           <ol className="mt-4 space-y-4">
             {plan.phases.map((ph, n) => (
               <li key={ph.title} className="rounded-2xl bg-cocoa/70 p-4 ring-1 ring-mahogany">
@@ -214,8 +231,7 @@ export function DarkMarkPlan({
                             {st.products.map((pr) => (
                               <span key={pr.brand + pr.name} title={`Contains: ${pr.matched.join(", ")}`} className="rounded-lg bg-espresso/70 px-2 py-1 text-[11px] leading-tight text-sand ring-1 ring-good/30">
                                 <span className="font-semibold text-shea">{pr.brand}</span> {pr.name}
-                                <span className="ml-1 text-[9px] text-good">✓ checked</span>
-                                {pr.blackOwned && <span className="ml-1 rounded bg-honey/20 px-1 text-[9px] font-semibold text-honey">Black-owned</span>}
+                                {pr.budget && <span className="ml-1 text-[10px] text-honey">{pr.budget}</span>}
                               </span>
                             ))}
                           </span>

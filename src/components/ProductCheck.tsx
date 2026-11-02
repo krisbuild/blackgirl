@@ -5,6 +5,7 @@ import { checkIngredients, VERDICT_LABEL, type SkinProfile, type Verdict } from 
 import { bandFromCount, bandOf } from "@/lib/insights";
 import { countOf, listScans, scoreOf } from "@/lib/journal";
 import { readLabel } from "@/lib/ocr";
+import { RoutineCheck } from "./RoutineCheck";
 
 const VERDICT_STYLE: Record<Verdict, string> = {
   great: "bg-good/15 text-good ring-good/40",
@@ -48,6 +49,7 @@ export function ProductCheck({ onBack }: { onBack: () => void }) {
   const [reading, setReading] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showPaste, setShowPaste] = useState(false);
+  const [tab, setTab] = useState<"product" | "routine">("product");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const report = useMemo(() => (text.trim().length > 5 && profile ? checkIngredients(text, profile.p) : null), [text, profile]);
@@ -85,83 +87,108 @@ export function ProductCheck({ onBack }: { onBack: () => void }) {
       <p className="mt-2 text-sm text-sand">Snap the ingredient list on any skincare product. We&apos;ll read it and check it against your skin.</p>
       {profile && <p className="mt-3 rounded-xl bg-espresso/60 p-3 text-xs text-muted">{profile.summary}</p>}
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
+      <div className="mt-5 grid grid-cols-2 rounded-full bg-cocoa/80 p-1 ring-1 ring-mahogany" role="tablist">
+        {(
+          [
+            ["product", "One product"],
+            ["routine", "My routine"],
+          ] as const
+        ).map(([id, label]) => (
           <button
-            onClick={() => fileRef.current?.click()}
-            className="rounded-2xl bg-gradient-to-r from-honey to-sun px-4 py-4 text-sm font-semibold text-espresso"
+            key={id}
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => setTab(id)}
+            className={`rounded-full py-2 text-sm font-semibold transition ${tab === id ? "bg-sun text-espresso" : "text-sand"}`}
           >
-            📷 Photograph ingredients
+            {label}
           </button>
-          <button onClick={() => setShowPaste(true)} className="rounded-2xl px-4 py-4 text-sm font-semibold text-sand ring-1 ring-mahogany">
-            Type or paste the list
-          </button>
-        </div>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(e) => {
-            void onFile(e.target.files?.[0]);
-            e.target.value = ""; // allow picking the same file again
-          }}
-        />
+        ))}
+      </div>
 
-        {photo && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo} alt="Ingredient label" className="mt-4 max-h-48 w-full rounded-2xl object-cover ring-1 ring-mahogany" />
-        )}
-        {reading != null && (
-          <div className="mt-4">
-            <p className="text-sm text-sand">Reading the label… {Math.round(reading * 100)}%</p>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-mahogany">
-              <div className="h-full rounded-full bg-sun transition-all" style={{ width: `${Math.max(4, reading * 100)}%` }} />
-            </div>
+      {tab === "routine" && <RoutineCheck profile={profile?.p} />}
+      {tab === "product" && (
+        <>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="rounded-2xl bg-gradient-to-r from-honey to-sun px-4 py-4 text-sm font-semibold text-espresso"
+            >
+              📷 Photograph ingredients
+            </button>
+            <button onClick={() => setShowPaste(true)} className="rounded-2xl px-4 py-4 text-sm font-semibold text-sand ring-1 ring-mahogany">
+              Type or paste the list
+            </button>
           </div>
-        )}
-        {error && <p className="mt-4 rounded-xl bg-terracotta/15 p-3 text-sm text-[#f0a383]">{error}</p>}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => {
+              void onFile(e.target.files?.[0]);
+              e.target.value = ""; // allow picking the same file again
+            }}
+          />
 
-        {showPaste && (
-          <label className="mt-4 block">
-            <span className="text-xs text-muted">{photo ? "What we read. Fix anything that looks wrong:" : "Ingredients (comma separated):"}</span>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              rows={5}
-              placeholder="Aqua, Niacinamide, Glycerin, Zinc PCA…"
-              className="mt-1 w-full rounded-2xl bg-cocoa/80 p-3 text-sm text-shea ring-1 ring-mahogany placeholder:text-muted/60 focus:outline-none focus:ring-honey"
-            />
-          </label>
-        )}
-
-        {report && (
-          <div className="mt-6 space-y-3" aria-live="polite">
-            <div className={`rounded-2xl p-4 ring-1 ${VERDICT_STYLE[report.verdict]}`}>
-              <p className="text-xs font-semibold uppercase tracking-wider">{VERDICT_LABEL[report.verdict]}</p>
-              <p className="mt-1 font-display text-xl text-shea">{report.headline}</p>
-              <p className="mt-1 text-[11px] text-muted">Read {report.count} ingredients.</p>
+          {photo && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photo} alt="Ingredient label" className="mt-4 max-h-48 w-full rounded-2xl object-cover ring-1 ring-mahogany" />
+          )}
+          {reading != null && (
+            <div className="mt-4">
+              <p className="text-sm text-sand">Reading the label… {Math.round(reading * 100)}%</p>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-mahogany">
+                <div className="h-full rounded-full bg-sun transition-all" style={{ width: `${Math.max(4, reading * 100)}%` }} />
+              </div>
             </div>
+          )}
+          {error && <p className="mt-4 rounded-xl bg-terracotta/15 p-3 text-sm text-[#f0a383]">{error}</p>}
 
-            {report.avoid.length > 0 && (
-              <Section title="Avoid" tone="text-[#f0a383]" items={report.avoid} />
-            )}
-            {report.cautions.length > 0 && <Section title="Use with care" tone="text-honey" items={report.cautions} />}
-            {report.goods.length > 0 && (
-              <Section
-                title="Good stuff"
-                tone="text-good"
-                items={[...report.goods].sort((a, b) => Number(b.forYou) - Number(a.forYou))}
-                tag={(g) => ("forYou" in g && g.forYou ? "For your skin" : undefined)}
+          {showPaste && (
+            <label className="mt-4 block">
+              <span className="text-xs text-muted">{photo ? "What we read. Fix anything that looks wrong:" : "Ingredients (comma separated):"}</span>
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                rows={5}
+                placeholder="Aqua, Niacinamide, Glycerin, Zinc PCA…"
+                className="mt-1 w-full rounded-2xl bg-cocoa/80 p-3 text-sm text-shea ring-1 ring-mahogany placeholder:text-muted/60 focus:outline-none focus:ring-honey"
               />
-            )}
-            {report.notes.map((n) => (
-              <p key={n} className="rounded-xl bg-mahogany/40 p-3 text-xs leading-relaxed text-sand">
-                {n}
-              </p>
-            ))}
-          </div>
-        )}
+            </label>
+          )}
+
+          {report && (
+            <div className="mt-6 space-y-3" aria-live="polite">
+              <div className={`rounded-2xl p-4 ring-1 ${VERDICT_STYLE[report.verdict]}`}>
+                <p className="text-xs font-semibold uppercase tracking-wider">{VERDICT_LABEL[report.verdict]}</p>
+                <p className="mt-1 font-display text-xl text-shea">{report.headline}</p>
+                <p className="mt-1 text-[11px] text-muted">Read {report.count} ingredients.</p>
+              </div>
+
+              {report.avoid.length > 0 && (
+                <Section title="Avoid" tone="text-[#f0a383]" items={report.avoid} />
+              )}
+              {report.cautions.length > 0 && <Section title="Use with care" tone="text-honey" items={report.cautions} />}
+              {report.goods.length > 0 && (
+                <Section
+                  title="Good stuff"
+                  tone="text-good"
+                  items={[...report.goods].sort((a, b) => Number(b.forYou) - Number(a.forYou))}
+                  tag={(g) => ("forYou" in g && g.forYou ? "For your skin" : undefined)}
+                />
+              )}
+              {report.notes.map((n) => (
+                <p key={n} className="rounded-xl bg-mahogany/40 p-3 text-xs leading-relaxed text-sand">
+                  {n}
+                </p>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
       <p className="mt-8 text-[11px] leading-relaxed text-muted">
         Product check reads the label only, and reading a photo can miss words, so check the list above. It can&apos;t
         tell whether a product is genuine or counterfeit. Cosmetic guidance, not medical advice.

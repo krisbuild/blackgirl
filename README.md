@@ -25,7 +25,11 @@ Built for the YouCam API Skin AI & eCommerce VTO Hackathon.
    verdict for *your* skin: Avoid / Use with care / Okay / Good / Great match, with the exact ingredients behind it.
    It flags mercury, steroids (clobetasol and others) and hydroquinone, pore-clogging oils for oily skin, and
    irritants. It reads labels only and can't detect counterfeits.
-8. **Journal:** every scan is saved privately in Supabase, with a trend chart per concern,
+8. **My routine:** list your own products (morning / night). Each is matched to its real ingredient list (from
+   Shine's verified catalogue, or looked up live on INCIDecoder, or pasted), checked for your skin, and the routine is
+   checked as a whole: missing morning sunscreen, retinoids in the morning, retinoid + acid on the same night,
+   harmful ingredients, overlaps, and gaps for dark marks or acne.
+9. **Journal:** every scan is saved privately in Supabase, with a trend chart per concern,
    a then-and-now comparison slider and delete.
 
 ### How the assessment works (server-side)
@@ -38,7 +42,8 @@ Built for the YouCam API Skin AI & eCommerce VTO Hackathon.
    removes retinoids; sensitive skin slows introduction; warning signs such as a changing or bleeding mark put a
    dermatologist first).
 4. **Products:** each catalogue product's full ingredient list is fetched from INCIDecoder by
-   `scripts/fetch-inci.mjs` into `src/data/inci.json` (with page URL and date; 23/23 verified on 2026-11-02).
+   `scripts/fetch-inci.mjs` into `src/data/inci.json` (with page URL and date; 49/49 verified on 2026-11-02, across
+   budget, mid-range and premium price bands; users pick their budget in the plan).
    A product is recommended only if that list contains what the step needs and passes the same ingredient check
    as Product check for *this* user; otherwise it's listed as "left out for your skin" with the reason. For oily,
    acne-prone skin, for example, Black Girl Sunscreen is left out for cocoa butter and Bolden SPF 30 for fragrance.

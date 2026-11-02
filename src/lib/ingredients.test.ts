@@ -30,6 +30,12 @@ describe("checkIngredients", () => {
     expect(r.cautions.map((c) => c.label)).toEqual(expect.arrayContaining(["Coconut oil", "Cocoa butter", "Fragrance"]));
   });
 
+  it("recognises tranexamic acid derivatives and ignores citrus fruit extracts", () => {
+    expect(checkIngredients("Water, Cetyl Tranexamate Mesylate", OILY_MARKS).goods.map((g) => g.label)).toContain("Tranexamic acid");
+    expect(checkIngredients("Water, Citrus Aurantium Dulcis (Orange) Fruit Extract", OILY_MARKS).cautions).toHaveLength(0);
+    expect(checkIngredients("Water, Citrus Limon (Lemon) Peel Oil", OILY_MARKS).cautions[0].label).toBe("Citrus oils");
+  });
+
   it("flags coconut oil but not coconut fruit extract", () => {
     expect(checkIngredients("Water, Cocos Nucifera (Coconut) Fruit Extract, Glycerin", OILY_MARKS).cautions).toHaveLength(0);
     expect(checkIngredients("Cocos Nucifera (Coconut) Oil, Glycerin", OILY_MARKS).cautions[0].label).toBe("Coconut oil");

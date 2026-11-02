@@ -12,7 +12,7 @@ import { checkIngredients, type SkinProfile } from "./ingredients";
 import { bandFromCount, bandOf, BAND_LABEL, CONCERNS, worseBand, type Band } from "./insights";
 import { ZONE_LABEL, type MarkStats, type Zone } from "./marks-shared";
 import { buildPlan, type Onset, type Plan, type PlanStep } from "./plan";
-import { PRODUCTS, STEP_TARGET, type Product } from "./products";
+import { PRODUCTS, STEP_TARGET, type Budget, type Product } from "./products";
 
 export type Feel = "right" | "more" | "fewer";
 
@@ -35,6 +35,8 @@ export type AssessmentInput = {
     pregnant?: boolean;
     sensitive?: boolean;
     warningSigns?: WarningSign[];
+    /** Highest price band the user wants to see. */
+    budget?: Budget;
   };
   /** Weeks since the user's first scan. */
   trackedWeeks?: number;
@@ -81,13 +83,20 @@ export function profileFrom(input: AssessmentInput): SkinProfile {
 }
 
 /** A product qualifies only if its real ingredient list contains the step's target and passes the check. */
-export function checkProducts(step: string, profile: SkinProfile): { products: VerifiedProduct[]; leftOut: RejectedProduct[] } {
+const TIER: Record<Budget, number> = { $: 1, $$: 2, $$$: 3 };
+
+export function checkProducts(
+  step: string,
+  profile: SkinProfile,
+  budget?: Budget,
+): { products: VerifiedProduct[]; leftOut: RejectedProduct[] } {
   const target = STEP_TARGET[step];
   const products: VerifiedProduct[] = [];
   const leftOut: RejectedProduct[] = [];
   for (const p of PRODUCTS[step] ?? []) {
     const reject = (reason: string) => leftOut.push({ brand: p.brand, name: p.name, reason });
     if (!p.inci) continue; // unverified ingredient list: never shown
+    if (budget && p.budget && TIER[p.budget] > TIER[budget]) continue;
     if (p.forSkin === "oily" && profile.dry && !profile.oily) continue;
     if (p.forSkin === "dry" && profile.oily) continue;
     const r = checkIngredients(p.inci, profile);
@@ -105,6 +114,11 @@ export function checkProducts(step: string, profile: SkinProfile): { products: V
       continue;
     }
     products.push({ ...p, verdict: r.verdict, matched: labels });
+  }
+  // closest to the chosen budget first, then cheaper
+  if (budget) {
+    const dist = (p: Product) => Math.abs(TIER[p.budget ?? "$"] - TIER[budget]);
+    products.sort((x, y) => dist(x) - dist(y) || TIER[x.budget ?? "$"] - TIER[y.budget ?? "$"]);
   }
   return { products: products.slice(0, 3), leftOut };
 }
@@ -164,7 +178,7 @@ export function assess(input: AssessmentInput): Assessment {
 
   const phases = plan.phases.map((ph) => ({
     ...ph,
-    steps: ph.steps.map((st) => ({ ...st, ...checkProducts(st.name, profile) })),
+    steps: ph.steps.map((st) => ({ ...st, ...checkProducts(st.name, profile, a.budget) })),
   }));
 
   const signs = (a.warningSigns ?? [])

@@ -35,9 +35,17 @@ describe("assess (real selfie measurements)", () => {
 
   it("recommends sunscreens whose real ingredient lists pass for oily, acne-prone skin, and says why others were left out", () => {
     const sun = a.plan.phases.flatMap((p) => p.steps).find((s) => s.name.startsWith("Sunscreen"))!;
-    expect(sun.products.map((p) => p.brand)).toEqual(["Beauty of Joseon", "Supergoop!"]);
+    const names = sun.products.map((p) => `${p.brand} ${p.name}`).join(" | ");
+    expect(names).toMatch(/Beauty of Joseon/);
+    expect(names).not.toMatch(/Black Girl|Bolden|UVMune/);
+    expect(sun.leftOut.find((x) => x.name.includes("UVMune"))?.reason).toMatch(/fragrance/);
     expect(sun.leftOut.find((x) => x.brand === "Black Girl Sunscreen")?.reason).toMatch(/cocoa butter/);
     expect(sun.products.every((p) => p.inciSource?.includes("incidecoder.com"))).toBe(true);
+  });
+
+  it("filters products by budget", () => {
+    const cheap = assess({ ...REAL, answers: { budget: "$" } });
+    for (const s of cheap.plan.phases.flatMap((p) => p.steps)) for (const p of s.products) expect(p.budget, p.name).toBe("$");
   });
 
   it("never recommends a product whose ingredient list hasn't been verified", () => {

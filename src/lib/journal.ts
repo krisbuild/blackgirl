@@ -34,6 +34,7 @@ export type ScanNote = {
   pregnant?: boolean;
   sensitive?: boolean;
   warningSigns?: string[];
+  budget?: "$" | "$$" | "$$$";
 };
 
 export function readNote(s: Pick<Scan, "note">): ScanNote {
