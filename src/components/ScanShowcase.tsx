@@ -23,6 +23,8 @@ const CALLOUTS: Array<{ key: ShowcaseConcern; label: string; at: [number, number
   { key: "age_spot", label: "Dark marks", at: anchors.cheekL, side: "l", dy: 34 },
   { key: "texture", label: "Texture", at: anchors.cheekR, side: "r", dy: 34 },
   { key: "acne", label: "Breakouts", at: anchors.forehead, side: "r", dy: -54 },
+  // YouCam has no sunburn detector; its redness reading is the closest signal.
+  { key: "redness", label: "Sunburn", at: anchors.nose, side: "l", dy: -44 },
 ];
 
 const BEAM_FROM = bbox.top - 12;
@@ -102,13 +104,9 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
         <rect width={W} height={H} fill="#0b0503" opacity="0.18" />
         <rect width={W} height={H} fill="url(#sc-vignette)" />
 
-        {/* base mesh: always faintly visible */}
-        <path d={FACE_MESH.tesselation} fill="none" stroke="#fbf1e3" strokeWidth="0.28" opacity="0.28" className="scan-fade-in" />
-
-        {/* lit mesh under the scan band */}
+        {/* landmark points: only glow where the scan band passes */}
         <g mask="url(#sc-reveal)">
-          <path d={FACE_MESH.tesselation} fill="none" stroke="#f6c453" strokeWidth="0.55" />
-          <path d={FACE_MESH.dots} fill="none" stroke="#fff3c9" strokeWidth="1.6" strokeLinecap="round" />
+          <path d={FACE_MESH.dots} fill="none" stroke="#fff3c9" strokeWidth="1.3" strokeLinecap="round" opacity="0.85" />
         </g>
 
         {/* feature contours */}

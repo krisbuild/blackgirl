@@ -3,7 +3,7 @@
 //   npm run showcase            (defaults to public/showcase/portrait.jpg)
 //
 // Saves into public/showcase/: the resized photo YouCam scored (photo.jpg), plus YouCam's detection masks
-// for dark marks (age_spot), acne and texture. Writes them into SCAN in src/data/showcase.ts.
+// for dark marks (age_spot), acne, texture and redness (shown as sunburn). Writes them into SCAN in src/data/showcase.ts.
 // Costs one skin-analysis task. Needs YOUCAM_API_KEY in .env.local.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -13,7 +13,7 @@ const KEY = process.env.YOUCAM_API_KEY;
 if (!KEY) throw new Error("YOUCAM_API_KEY is not set (add it to .env.local)");
 const BASE = process.env.YOUCAM_BASE_URL ?? "https://yce-api-01.makeupar.com";
 const ACTIONS = ["age_spot", "acne", "texture", "redness", "radiance", "pore", "oiliness", "moisture", "skin_type"];
-const MASKS = ["age_spot", "acne", "texture"];
+const MASKS = ["age_spot", "acne", "texture", "redness"];
 
 async function api(p, init = {}) {
   const res = await fetch(BASE + p, {
