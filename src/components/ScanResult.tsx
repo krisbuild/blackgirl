@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { prepareForAnalysis } from "@/lib/image";
+import { prepareForAnalysis, zoomToFace } from "@/lib/image";
 import { BAND_LABEL, insightsFrom, type Band, type Insight } from "@/lib/insights";
 import { whereSummary, type MarkStats } from "@/lib/marks-shared";
 import { firstScanDate, saveScan, updateScanNote, type Analysis, type Feel, type ScanNote } from "@/lib/journal";
@@ -10,7 +10,7 @@ import { SkinViewer } from "./SkinViewer";
 
 type Phase =
   | { kind: "working"; step: "preparing" | "analyzing" | "saving" }
-  | { kind: "error"; message: string }
+  | { kind: "error"; message: string; code?: string }
   | { kind: "done"; analysis: Analysis; scanId?: string; firstScan?: string | null; saveError?: string };
 
 const STEPS = [
@@ -60,15 +60,34 @@ export function ScanResult({
 
       setPhase({ kind: "working", step: "analyzing" });
       let analysis: Analysis;
-      try {
+      const send = async (img: Blob) => {
         const form = new FormData();
-        form.append("image", prepared, "selfie.jpg");
+        form.append("image", img, "selfie.jpg");
         const res = await fetch("/api/analyze", { method: "POST", body: form });
-        const body = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(body.error ?? "Something went wrong analysing your photo.");
-        analysis = body as Analysis;
+        const body = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
+        return { ok: res.ok, status: res.status, body };
+      };
+      try {
+        let r = await send(prepared);
+        // Face too small for YouCam (must fill > 60% of the width): zoom in on the centre and retry once.
+        if (!r.ok && r.body.code === "error_src_face_too_small") {
+          const z = await zoomToFace(prepared);
+          prepared = z.blob;
+          setSize({ width: z.width, height: z.height });
+          setUrl(URL.createObjectURL(prepared));
+          r = await send(prepared);
+        }
+        if (!r.ok) {
+          setPhase({
+            kind: "error",
+            message: r.body.error ?? "Something went wrong analysing your photo.",
+            code: r.body.code ?? `http_${r.status}`,
+          });
+          return;
+        }
+        analysis = r.body as Analysis;
       } catch (e) {
-        setPhase({ kind: "error", message: (e as Error).message });
+        setPhase({ kind: "error", message: "We couldn't reach the analysis service. Check your connection and try again.", code: (e as Error).name });
         return;
       }
 
@@ -129,6 +148,7 @@ export function ScanResult({
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-terracotta/20 text-2xl text-terracotta">!</span>
         <h2 className="mt-5 font-display text-3xl">We couldn&apos;t read this one</h2>
         <p className="mt-3 max-w-sm text-muted">{phase.message}</p>
+        {phase.code && <p className="mt-2 text-[10px] text-muted/70">Code: {phase.code}</p>}
         <button onClick={onRetake} className="mt-8 w-full rounded-full bg-gradient-to-r from-honey to-sun py-4 font-semibold text-espresso">
           Try another photo
         </button>

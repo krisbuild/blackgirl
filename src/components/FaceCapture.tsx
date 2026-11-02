@@ -91,6 +91,8 @@ export function FaceCapture({
   const listenersRef = useRef<number[]>([]);
 
   const openRef = useRef(false);
+  const startTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (startTimer.current && clearTimeout(startTimer.current)), []);
   const slotRef = useRef<HTMLDivElement>(null);
 
   // Move the kit's permanent mount node into this screen, and park it again on the way out.
@@ -162,6 +164,15 @@ export function FaceCapture({
         setError("We couldn't find a camera on this device. You can upload a photo instead.");
       });
     }
+    // The kit doesn't always restart after being closed (e.g. on retake). Don't spin forever.
+    if (startTimer.current) clearTimeout(startTimer.current);
+    startTimer.current = setTimeout(() => {
+      setStatus((st) => {
+        if (st !== "loading") return st;
+        setError("The guided camera didn't start. Tap \"Use the simple camera\" below, or upload a photo.");
+        return "failed";
+      });
+    }, 8000);
   }, []);
 
   const start = useCallback(

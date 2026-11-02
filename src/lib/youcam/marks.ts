@@ -16,7 +16,16 @@ type Mask = { width: number; height: number; alpha: Uint8Array };
 export function decodeMask(png: Buffer | Uint8Array): Mask {
   const img = PNG.sync.read(Buffer.from(png));
   const alpha = new Uint8Array(img.width * img.height);
-  for (let i = 0; i < alpha.length; i++) alpha[i] = img.data[i * 4 + 3];
+  const hist = new Uint32Array(256);
+  for (let i = 0; i < alpha.length; i++) {
+    alpha[i] = img.data[i * 4 + 3];
+    hist[alpha[i]]++;
+  }
+  // HD masks can carry a uniform semi-transparent "dark background" layer over the whole image.
+  // Treat the most common alpha as background and measure detections above it.
+  let bg = 0;
+  for (let v = 1; v < 256; v++) if (hist[v] > hist[bg]) bg = v;
+  if (bg > 0) for (let i = 0; i < alpha.length; i++) alpha[i] = alpha[i] > bg ? alpha[i] - bg : 0;
   return { width: img.width, height: img.height, alpha };
 }
 

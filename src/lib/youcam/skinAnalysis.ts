@@ -138,11 +138,20 @@ export async function analyzeSkin(
   const size = imageSize(image);
   const hd = !!size && Math.min(size.width, size.height) >= HD_MIN_SHORT_SIDE;
   const actions: readonly string[] = hd ? HD_ACTIONS : SKIN_ACTIONS;
+  // HD masks default to a grey "dark background" layer over the whole photo; switch it off so the
+  // masks show detections only (cleaner overlay, and countable).
+  const miniserverArgs: Record<string, unknown> = { enable_mask_overlay: false };
+  if (hd) {
+    for (const c of ["age_spot", "acne", "texture", "pore", "oiliness", "redness", "wrinkle", "firmness"]) {
+      miniserverArgs[`enable_dark_background_hd_${c}`] = false;
+    }
+  }
 
   // Same photo + same actions = same answer: never spend units twice.
   const key = createHash("sha256")
     .update(image)
     .update(actions.join(","))
+    .update(JSON.stringify(miniserverArgs))
     .digest("hex");
   const cached = await readCache<{ parsed: SkinAnalysisResult }>("skin", key);
   // Mask URLs expire after ~2 h; scores stay valid, so the cache is still useful.
@@ -163,7 +172,7 @@ export async function analyzeSkin(
   const results = await runTask("skin-analysis", {
     src_file_id: fileId,
     dst_actions: actions,
-    miniserver_args: { enable_mask_overlay: false },
+    miniserver_args: miniserverArgs,
     format: "json",
   });
   const parsed: SkinAnalysisResult = {
