@@ -43,8 +43,10 @@ export class YouCamError extends Error {
 }
 
 function apiKey(): string {
-  const key = process.env.YOUCAM_API_KEY;
+  // Trim and strip quotes: pasted keys often pick up stray whitespace or quotes.
+  const key = process.env.YOUCAM_API_KEY?.trim().replace(/^["']|["']$/g, "");
   if (!key) throw new YouCamError("YOUCAM_API_KEY is not set", "no_api_key");
+  if (/\s/.test(key)) throw new YouCamError("YOUCAM_API_KEY contains spaces or line breaks", "bad_api_key");
   return key;
 }
 
@@ -57,7 +59,11 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = HTTP
     if ((err as Error).name === "AbortError") {
       throw new YouCamError(`Request to ${new URL(url).pathname} timed out`, "timeout");
     }
-    throw new YouCamError(`Network error: ${(err as Error).message}`, "network_error");
+    // Surface the underlying cause (e.g. ENOTFOUND, ECONNRESET, UND_ERR_CONNECT_TIMEOUT) and which host failed.
+    const cause = (err as { cause?: { code?: string; message?: string } }).cause;
+    const why = cause?.code ?? cause?.message ?? (err as Error).message;
+    console.error("[youcam] fetch failed", new URL(url).host, new URL(url).pathname, why);
+    throw new YouCamError(`Network error reaching ${new URL(url).host}: ${why}`, `network_error:${new URL(url).host.split(".")[0]}:${why}`.slice(0, 80));
   } finally {
     clearTimeout(t);
   }

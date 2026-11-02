@@ -18,6 +18,8 @@ const FRIENDLY: Record<string, { status: number; message: string }> = {
   unauthorized: { status: 502, message: "The skin analysis service rejected our credentials." },
   InvalidApiKey: { status: 502, message: "The skin analysis service rejected our credentials." },
   no_api_key: { status: 503, message: "Live analysis isn't configured on this server." },
+  network_error: { status: 502, message: "Our server couldn't reach the skin analysis service. Please try again in a moment." },
+  bad_api_key: { status: 503, message: "The skin analysis service isn't set up correctly on this server." },
   timeout: { status: 504, message: "The analysis is taking too long. Please try again in a moment." },
 };
 
@@ -48,7 +50,7 @@ export async function POST(req: Request) {
   } catch (err) {
     if (err instanceof YouCamError) {
       console.error("[analyze]", err.code, err.message);
-      const f = FRIENDLY[err.code];
+      const f = FRIENDLY[err.code] ?? (err.code.startsWith("network_error") ? FRIENDLY.network_error : undefined);
       return Response.json(
         { error: f?.message ?? "Something went wrong analysing your photo. Please try again.", code: err.code },
         { status: f?.status ?? 502 },
