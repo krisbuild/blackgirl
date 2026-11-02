@@ -11,6 +11,7 @@ import { runTask, uploadImage, YouCamError } from "./client";
  * - acne      -> active breakouts
  * - texture   -> unevenness, which includes scarring
  * - redness, radiance, pore, oiliness, moisture -> context for evenness and routine advice
+ * - dark_circle_v2 -> dark undereyes, very common on melanin-rich skin
  * - skin_type -> oily/dry/normal per zone, used to pick product textures
  */
 export const SKIN_ACTIONS = [
@@ -22,6 +23,7 @@ export const SKIN_ACTIONS = [
   "pore",
   "oiliness",
   "moisture",
+  "dark_circle_v2",
   "skin_type",
 ] as const;
 export type SkinConcern = (typeof SKIN_ACTIONS)[number];

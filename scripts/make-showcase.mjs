@@ -12,8 +12,8 @@ const photoPath = process.argv[2] ?? "public/showcase/portrait.jpg";
 const KEY = process.env.YOUCAM_API_KEY;
 if (!KEY) throw new Error("YOUCAM_API_KEY is not set (add it to .env.local)");
 const BASE = process.env.YOUCAM_BASE_URL ?? "https://yce-api-01.makeupar.com";
-const ACTIONS = ["age_spot", "acne", "texture", "redness", "radiance", "pore", "oiliness", "moisture", "skin_type"];
-const MASKS = ["age_spot", "acne", "texture", "redness"];
+const ACTIONS = ["age_spot", "acne", "texture", "redness", "radiance", "pore", "oiliness", "moisture", "dark_circle_v2", "skin_type"];
+const MASKS = ["age_spot", "acne", "texture", "redness", "dark_circle_v2"];
 
 async function api(p, init = {}) {
   const res = await fetch(BASE + p, {

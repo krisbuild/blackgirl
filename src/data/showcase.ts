@@ -6,7 +6,7 @@
  * SCAN is filled in by `npm run showcase`, which runs a REAL YouCam skin analysis on the
  * portrait and saves YouCam's own masks and scores. Until then it is null and no scores show.
  */
-export type ShowcaseConcern = "age_spot" | "acne" | "texture" | "redness";
+export type ShowcaseConcern = "age_spot" | "acne" | "texture" | "redness" | "dark_circle_v2";
 
 export type ShowcasePortrait = {
   image: string;

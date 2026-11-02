@@ -19,10 +19,12 @@ const W = 300;
 const H = 400;
 const { bbox, anchors } = FACE_MESH;
 
-const CALLOUTS: Array<{ key: ShowcaseConcern; label: string; at: [number, number]; side: "l" | "r"; dy: number }> = [
+/** `via`: optional x the leader runs along first, to route around features like the eyes. */
+const CALLOUTS: Array<{ key: ShowcaseConcern; label: string; at: [number, number]; side: "l" | "r"; dy: number; via?: number }> = [
   { key: "age_spot", label: "Dark marks", at: anchors.cheekL, side: "l", dy: 34 },
   { key: "texture", label: "Texture", at: anchors.cheekR, side: "r", dy: 34 },
-  { key: "acne", label: "Breakouts", at: anchors.forehead, side: "r", dy: -54 },
+  { key: "acne", label: "Acne", at: anchors.forehead, side: "r", dy: -64 },
+  { key: "dark_circle_v2", label: "Dark undereyes", at: anchors.underEyeR, side: "r", dy: -97, via: 218 },
   // YouCam has no sunburn detector; its redness reading is the closest signal.
   { key: "redness", label: "Sunburn", at: anchors.nose, side: "l", dy: -44 },
 ];
@@ -50,7 +52,7 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={real?.image ?? PORTRAIT.image}
-        alt="Portrait being scanned for dark marks, texture and breakouts"
+        alt="Portrait being scanned for dark marks, acne, texture, dark undereyes and sunburn"
         className="absolute inset-0 h-full w-full object-cover"
       />
 
@@ -151,7 +153,11 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
               <circle cx={c.at[0]} cy={c.at[1]} r="7" fill="none" stroke="#f6c453" strokeWidth="1.4" className={on ? "scan-ping" : ""} />
               <circle cx={c.at[0]} cy={c.at[1]} r="2.2" fill="#f6c453" />
               <path
-                d={`M${c.at[0]},${c.at[1]}L${c.at[0]},${py + pillH / 2}H${elbowX}`}
+                d={
+                  c.via != null
+                    ? `M${c.at[0]},${c.at[1]}H${c.via}V${py + pillH}`
+                    : `M${c.at[0]},${c.at[1]}L${c.at[0]},${py + pillH / 2}H${elbowX}`
+                }
                 fill="none"
                 stroke="#f6c453"
                 strokeWidth="0.9"
@@ -182,7 +188,7 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
       {/* bottom HUD */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pb-3.5 pt-10">
         <div className="flex items-center gap-1.5">
-          {["Light", "Angle", "Distance"].map((t) => (
+          {["Good light", "Facing forward", "Right distance"].map((t) => (
             <span key={t} className="flex items-center gap-1 rounded-full bg-good/20 px-2 py-0.5 text-[10px] font-semibold text-good backdrop-blur">
               <span aria-hidden="true">✓</span>
               {t}
