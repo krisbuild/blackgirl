@@ -37,8 +37,11 @@ Built for the YouCam API Skin AI & eCommerce VTO Hackathon.
 3. **Your answers:** mark age, "does this match your mirror?", and safety questions (pregnant or breastfeeding
    removes retinoids; sensitive skin slows introduction; warning signs such as a changing or bleeding mark put a
    dermatologist first).
-4. **Products:** recommended only if their full ingredient list (with source) contains what the step needs and passes
-   the same ingredient check as Product check for *this* user. Products without a verified list are never shown.
+4. **Products:** each catalogue product's full ingredient list is fetched from INCIDecoder by
+   `scripts/fetch-inci.mjs` into `src/data/inci.json` (with page URL and date; 23/23 verified on 2026-11-02).
+   A product is recommended only if that list contains what the step needs and passes the same ingredient check
+   as Product check for *this* user; otherwise it's listed as "left out for your skin" with the reason. For oily,
+   acne-prone skin, for example, Black Girl Sunscreen is left out for cocoa butter and Bolden SPF 30 for fragrance.
 
 The result is a cosmetic assessment with its working shown ("What we measured", "How Shine reached this"), not a
 medical diagnosis.

@@ -42,7 +42,8 @@ export type AssessmentInput = {
 
 export type Measurement = { label: string; value: string; band?: Band; method: string };
 export type VerifiedProduct = Product & { verdict: string; matched: string[] };
-export type AssessedStep = PlanStep & { products: VerifiedProduct[] };
+export type RejectedProduct = { brand: string; name: string; reason: string };
+export type AssessedStep = PlanStep & { products: VerifiedProduct[]; leftOut: RejectedProduct[] };
 export type Assessment = {
   measurements: Measurement[];
   plan: Omit<Plan, "phases"> & { phases: Array<Omit<Plan["phases"][number], "steps"> & { steps: AssessedStep[] }> };
@@ -80,21 +81,35 @@ export function profileFrom(input: AssessmentInput): SkinProfile {
 }
 
 /** A product qualifies only if its real ingredient list contains the step's target and passes the check. */
-export function verifyProducts(step: string, profile: SkinProfile): VerifiedProduct[] {
+export function checkProducts(step: string, profile: SkinProfile): { products: VerifiedProduct[]; leftOut: RejectedProduct[] } {
   const target = STEP_TARGET[step];
-  const out: VerifiedProduct[] = [];
+  const products: VerifiedProduct[] = [];
+  const leftOut: RejectedProduct[] = [];
   for (const p of PRODUCTS[step] ?? []) {
-    if (!p.inci) continue; // unverified ingredient list: never recommended
+    const reject = (reason: string) => leftOut.push({ brand: p.brand, name: p.name, reason });
+    if (!p.inci) continue; // unverified ingredient list: never shown
     if (p.forSkin === "oily" && profile.dry && !profile.oily) continue;
     if (p.forSkin === "dry" && profile.oily) continue;
     const r = checkIngredients(p.inci, profile);
-    if (r.avoid.length || r.cautions.length) continue;
+    if (r.avoid.length) {
+      reject(`has ${r.avoid.map((a) => a.label.toLowerCase()).join(", ")}`);
+      continue;
+    }
+    if (r.cautions.length) {
+      reject(`has ${r.cautions.map((c) => c.label.toLowerCase()).join(", ")}`);
+      continue;
+    }
     const labels = r.goods.map((g) => g.label);
-    if (target && !labels.includes(target)) continue;
-    out.push({ ...p, verdict: r.verdict, matched: labels });
+    if (target && !labels.includes(target)) {
+      reject(`no ${target.toLowerCase()} on its ingredient list`);
+      continue;
+    }
+    products.push({ ...p, verdict: r.verdict, matched: labels });
   }
-  return out.slice(0, 3);
+  return { products: products.slice(0, 3), leftOut };
 }
+
+export const verifyProducts = (step: string, profile: SkinProfile) => checkProducts(step, profile).products;
 
 export function assess(input: AssessmentInput): Assessment {
   const a = input.answers ?? {};
@@ -149,7 +164,7 @@ export function assess(input: AssessmentInput): Assessment {
 
   const phases = plan.phases.map((ph) => ({
     ...ph,
-    steps: ph.steps.map((st) => ({ ...st, products: verifyProducts(st.name, profile) })),
+    steps: ph.steps.map((st) => ({ ...st, ...checkProducts(st.name, profile) })),
   }));
 
   const signs = (a.warningSigns ?? [])
@@ -164,7 +179,7 @@ export function assess(input: AssessmentInput): Assessment {
     plan: { ...plan, phases },
     dermatologist: { urgent: signs.length > 0, reasons },
     productsNote: anyVerified
-      ? "Products are shown only when their full ingredient list contains what this step needs and passes our check for your skin."
+      ? "Products are shown only when their full ingredient list (from INCIDecoder) contains what this step needs and passes our check for your skin."
       : "Product picks appear once each product's full ingredient list has been verified against your skin. Until then, use Product check on anything you own.",
     method: [
       "Measured: YouCam AI Skin Analysis scores and detection maps for your photo" + (input.quality === "hd" ? " (HD)." : "."),

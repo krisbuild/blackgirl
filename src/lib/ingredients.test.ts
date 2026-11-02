@@ -30,6 +30,11 @@ describe("checkIngredients", () => {
     expect(r.cautions.map((c) => c.label)).toEqual(expect.arrayContaining(["Coconut oil", "Cocoa butter", "Fragrance"]));
   });
 
+  it("flags coconut oil but not coconut fruit extract", () => {
+    expect(checkIngredients("Water, Cocos Nucifera (Coconut) Fruit Extract, Glycerin", OILY_MARKS).cautions).toHaveLength(0);
+    expect(checkIngredients("Cocos Nucifera (Coconut) Oil, Glycerin", OILY_MARKS).cautions[0].label).toBe("Coconut oil");
+  });
+
   it("doesn't flag coconut oil for dry skin without acne", () => {
     const r = checkIngredients("Cocos Nucifera Oil, Glycerin, Ceramide NP", { dry: true, acne: false, darkMarks: false, fromScan: true });
     expect(r.cautions).toHaveLength(0);

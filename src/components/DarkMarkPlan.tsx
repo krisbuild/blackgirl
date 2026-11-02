@@ -203,6 +203,12 @@ export function DarkMarkPlan({
                           <span className="text-sm font-semibold text-shea">{st.name}</span>
                         </span>
                         <span className="block text-xs leading-relaxed text-muted">{st.note}</span>
+                        {st.leftOut.length > 0 && (
+                          <span className="mt-1 block text-[10px] leading-snug text-muted">
+                            Left out for your skin:{" "}
+                            {st.leftOut.map((x) => `${x.brand} ${x.name} (${x.reason})`).join("; ")}
+                          </span>
+                        )}
                         {st.products.length > 0 && (
                           <span className="mt-1.5 flex flex-wrap gap-1.5">
                             {st.products.map((pr) => (

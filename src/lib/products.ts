@@ -7,6 +7,11 @@
  * saying where it came from). The assessment engine runs that list through the same ingredient check
  * as Product check, against the user's own profile. Products without a verified list are never shown.
  */
+import INCI from "@/data/inci.json";
+
+type InciEntry = { inci: string; url: string; title: string; fetchedAt: string };
+const VERIFIED = INCI as Record<string, InciEntry>;
+
 export type Product = {
   brand: string;
   name: string;
@@ -77,3 +82,14 @@ export const PRODUCTS: Record<string, Product[]> = {
     { brand: "The Ordinary", name: "Ascorbyl Glucoside Solution 12%", note: "Gentle form for sensitive skin" },
   ],
 };
+
+/** Attach the verified ingredient list (fetched by scripts/fetch-inci.mjs) to each catalogue product. */
+for (const list of Object.values(PRODUCTS)) {
+  for (const p of list) {
+    const v = VERIFIED[`${p.brand} ${p.name}`];
+    if (v && !p.inci) {
+      p.inci = v.inci;
+      p.inciSource = `${v.url} (fetched ${v.fetchedAt})`;
+    }
+  }
+}

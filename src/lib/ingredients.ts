@@ -45,7 +45,8 @@ const CAUTION: Array<Rule & { when?: (p: SkinProfile) => boolean }> = [
   {
     id: "coconut",
     label: "Coconut oil",
-    match: /cocos nucifera|coconut oil/,
+    // the oil only: coconut fruit extract or water doesn't clog pores the same way
+    match: /cocos nucifera[^,]*\boil\b|coconut oil/,
     why: "Can clog pores, so it's a common breakout trigger on oily, acne-prone skin.",
     when: (p) => !!(p.oily || p.acne),
   },
