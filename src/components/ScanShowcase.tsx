@@ -19,12 +19,12 @@ const W = 300;
 const H = 400;
 const { bbox, anchors } = FACE_MESH;
 
-const CALLOUTS: Array<{ key: ShowcaseConcern; label: string; color: string; at: [number, number]; side: "l" | "r"; dy: number }> = [
-  { key: "age_spot", label: "Dark marks", color: "#ffb547", at: anchors.cheekL, side: "l", dy: 34 },
-  { key: "texture", label: "Texture", color: "#b9a6ff", at: anchors.cheekR, side: "r", dy: 34 },
-  { key: "acne", label: "Breakouts", color: "#ff7aa8", at: anchors.forehead, side: "r", dy: -54 },
+const CALLOUTS: Array<{ key: ShowcaseConcern; label: string; at: [number, number]; side: "l" | "r"; dy: number }> = [
+  { key: "age_spot", label: "Dark marks", at: anchors.cheekL, side: "l", dy: 34 },
+  { key: "texture", label: "Texture", at: anchors.cheekR, side: "r", dy: 34 },
+  { key: "acne", label: "Breakouts", at: anchors.forehead, side: "r", dy: -54 },
   // YouCam has no sunburn detector; its redness reading is the closest signal.
-  { key: "redness", label: "Sunburn", color: "#ff8a5b", at: anchors.nose, side: "l", dy: -44 },
+  { key: "redness", label: "Sunburn", at: anchors.nose, side: "l", dy: -44 },
 ];
 
 const BEAM_FROM = bbox.top - 12;
@@ -79,8 +79,8 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
             <stop offset="1" stopColor="#fff" stopOpacity="1" />
           </linearGradient>
           <linearGradient id="sc-beam" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#ffffff" stopOpacity="0" />
-            <stop offset="1" stopColor="#ffffff" stopOpacity="0.16" />
+            <stop offset="0" stopColor="#f6c453" stopOpacity="0" />
+            <stop offset="1" stopColor="#f6c453" stopOpacity="0.22" />
           </linearGradient>
           <linearGradient id="sc-hfade" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0" stopColor="#fff" stopOpacity="0" />
@@ -106,21 +106,18 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
 
         {/* landmark points: only glow where the scan band passes */}
         <g mask="url(#sc-reveal)">
-          <path d={FACE_MESH.dots} fill="none" stroke="#ffffff" strokeWidth="1.3" strokeLinecap="round" opacity="0.85" />
+          <path d={FACE_MESH.dots} fill="none" stroke="#fff3c9" strokeWidth="1.3" strokeLinecap="round" opacity="0.85" />
         </g>
 
         {/* feature contours */}
-        <g fill="none" stroke="#ffffff" strokeLinecap="round" strokeLinejoin="round" className="scan-fade-in" style={{ filter: "drop-shadow(0 0 1.5px rgba(0,0,0,0.45))" }}>
-          <path d={FACE_MESH.contours.oval} strokeWidth="0.9" opacity="0.9" />
-          <path d={FACE_MESH.contours.leftBrow + FACE_MESH.contours.rightBrow} strokeWidth="0.9" opacity="0.85" />
-          <path d={FACE_MESH.contours.leftEye + FACE_MESH.contours.rightEye} strokeWidth="0.9" opacity="0.9" />
-          <path d={FACE_MESH.contours.lips} strokeWidth="0.9" opacity="0.85" />
+        <g fill="none" stroke="#f6c453" strokeLinecap="round" strokeLinejoin="round" className="scan-fade-in">
+          <path d={FACE_MESH.contours.oval} strokeWidth="1.1" opacity="0.95" />
         </g>
 
         {/* scan beam line */}
         <g mask="url(#sc-hmask)">
           <rect x={BOX.x} y="-40" width={BOX.w} height="40" fill="url(#sc-beam)" />
-          <rect x={BOX.x} y="-1" width={BOX.w} height="1" fill="#ffffff" />
+          <rect x={BOX.x} y="-1" width={BOX.w} height="1.2" fill="#fff3c9" />
           <animateTransform attributeName="transform" type="translate" values={`0 ${BEAM_FROM};0 ${BEAM_TO};0 ${BEAM_FROM}`} dur="5.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" />
         </g>
 
@@ -144,28 +141,27 @@ export function ScanShowcase({ className = "" }: { className?: string }) {
           const on = c.key === activeKey;
           const score = real?.scores[c.key];
           const text = c.label.toUpperCase();
-          const pillW = text.length * 6.4 + 24 + (score != null ? 24 : 0);
+          const pillW = text.length * 6.4 + 16 + (score != null ? 24 : 0);
           const pillH = 18;
           const px = c.side === "l" ? 30 : W - 30 - pillW;
           const py = c.at[1] + c.dy - pillH / 2;
           const elbowX = c.side === "l" ? px + pillW : px;
           return (
             <g key={c.key} className="transition-opacity duration-500" opacity={on ? 1 : 0.7}>
-              <circle cx={c.at[0]} cy={c.at[1]} r="7" fill="none" stroke={c.color} strokeWidth="1.4" className={on ? "scan-ping" : ""} />
-              <circle cx={c.at[0]} cy={c.at[1]} r="2.6" fill={c.color} stroke="#ffffff" strokeWidth="0.8" />
+              <circle cx={c.at[0]} cy={c.at[1]} r="7" fill="none" stroke="#f6c453" strokeWidth="1.4" className={on ? "scan-ping" : ""} />
+              <circle cx={c.at[0]} cy={c.at[1]} r="2.2" fill="#f6c453" />
               <path
                 d={`M${c.at[0]},${c.at[1]}L${c.at[0]},${py + pillH / 2}H${elbowX}`}
                 fill="none"
-                stroke={c.color}
+                stroke="#f6c453"
                 strokeWidth="0.9"
               />
-              <rect x={px} y={py} width={pillW} height={pillH} rx={pillH / 2} fill="#120a07" fillOpacity="0.82" stroke={on ? c.color : "rgba(255,255,255,0.18)"} strokeWidth="0.9" />
-              <circle cx={px + 9} cy={py + pillH / 2} r="2.6" fill={c.color} />
-              <text x={px + 16} y={py + 12.4} fontSize="9.5" fontWeight="700" fill="#fbf1e3" style={{ letterSpacing: "0.06em" }}>
+              <rect x={px} y={py} width={pillW} height={pillH} rx={pillH / 2} fill="#1d0f0a" fillOpacity="0.85" stroke={on ? "#f6c453" : "#4a2618"} strokeWidth="0.9" />
+              <text x={px + 8} y={py + 12.4} fontSize="9.5" fontWeight="700" fill="#fbf1e3" style={{ letterSpacing: "0.06em" }}>
                 {text}
               </text>
               {score != null && (
-                <text x={px + pillW - 8} y={py + 12.8} textAnchor="end" fontSize="11" fontWeight="800" fill={c.color}>
+                <text x={px + pillW - 8} y={py + 12.8} textAnchor="end" fontSize="11" fontWeight="800" fill="#f6c453">
                   {Math.round(score)}
                 </text>
               )}
