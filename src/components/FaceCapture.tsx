@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { SimpleCamera } from "./SimpleCamera";
 import { cameraKitMount, loadCameraKit, parkCameraKitMount, toBlob, type CapturedResult, type FaceQuality, type YMKApi } from "@/lib/cameraKit";
 
 type Status = "loading" | "live" | "failed";
@@ -80,6 +81,7 @@ export function FaceCapture({
   onBack: () => void;
 }) {
   const [status, setStatus] = useState<Status>("loading");
+  const [simple, setSimple] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quality, setQuality] = useState<FaceQuality | null>(null);
   const [photo, setPhoto] = useState<{ blob: Blob; url: string } | null>(null);
@@ -241,7 +243,9 @@ export function FaceCapture({
       <p className="mt-2 text-sm text-muted">
         {photo
           ? "Check that your face is sharp and evenly lit, then continue."
-          : "Hold still. We'll take the photo for you once everything looks right."}
+          : simple
+            ? "Face a light, fill the oval, then tap the button to take your photo."
+            : "Hold still. We'll take the photo for you once everything looks right."}
       </p>
 
       <div
@@ -250,11 +254,19 @@ export function FaceCapture({
         style={{ aspectRatio: "3 / 4" }}
       >
         {/* The kit's permanent #YMK-module node is moved in here (see cameraKitMount). */}
-        <div ref={slotRef} className={`absolute inset-0 ${photo ? "invisible" : ""}`} />
+        <div ref={slotRef} className={`absolute inset-0 ${photo || simple ? "invisible" : ""}`} />
+        {simple && !photo && (
+          <SimpleCamera
+            onCapture={(blob) => {
+              setSimple(false);
+              setPhoto({ blob, url: URL.createObjectURL(blob) });
+            }}
+          />
+        )}
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={photo.url} alt="Your selfie" className="absolute inset-0 h-full w-full object-cover" />
-        ) : (
+        ) : simple ? null : (
           <>
             {status === "loading" && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-sand">
@@ -282,6 +294,20 @@ export function FaceCapture({
         )}
       </div>
 
+      {!photo && (
+        <button
+          onClick={() => {
+            if (simple) {
+              setSimple(false);
+              restart();
+            } else void closeKit().then(() => setSimple(true));
+          }}
+          className="mt-3 w-full rounded-full py-2.5 text-sm font-semibold text-sand ring-1 ring-mahogany"
+        >
+          {simple ? "Use the guided camera" : "Can't see yourself? Use the simple camera"}
+        </button>
+      )}
+
       {photo ? (
         <div className="mt-6 grid grid-cols-2 gap-3">
           <button onClick={retake} className="rounded-full py-4 font-semibold text-sand ring-1 ring-mahogany">
@@ -296,7 +322,7 @@ export function FaceCapture({
         </div>
       ) : (
         <>
-          <ul className="mt-5 grid grid-cols-2 gap-2" aria-live="polite">
+          <ul className={`mt-5 grid grid-cols-2 gap-2 ${simple ? "hidden" : ""}`} aria-live="polite">
             {list.map((c) => (
               <li
                 key={c.label}
