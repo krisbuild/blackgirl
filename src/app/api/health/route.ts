@@ -2,7 +2,7 @@
  * Deployment health check: is the server configured, and can it reach YouCam?
  * Never returns secret values; only whether they're present and whether calls succeed.
  */
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 async function probe(url: string, init?: RequestInit) {
   const t0 = Date.now();
@@ -24,6 +24,7 @@ async function probe(url: string, init?: RequestInit) {
 }
 
 export async function GET() {
+  await connection(); // always run at request time
   const raw = process.env.YOUCAM_API_KEY ?? "";
   const key = raw.trim().replace(/^["']|["']$/g, "");
   const keyInfo = {
