@@ -8,9 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "smoke": "bash scripts/smoke-analyze.sh",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify:db": "node --env-file=.env.local scripts/verify-supabase.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",

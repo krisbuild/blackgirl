@@ -37,6 +37,9 @@ is a real YouCam analysis.
 3. Open the **SQL Editor**, paste `supabase/migrations/001_init.sql` and run it. This creates the
    `scans` table, the private `scan-photos` bucket and row-level security, so users only see their own data.
 
+4. Run `npm run verify:db`. It creates two anonymous users and checks that each one can only
+   see and delete their own scans and photos (14 checks).
+
 ### Try the API route
 
 ```bash
