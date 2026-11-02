@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
+/*
+ * Palette drawn from melanin-rich skin and warm light:
+ * cocoa and espresso grounds, honey and sun-gold highlights, terracotta accents, shea cream text.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --espresso: #1d0f0a;
+  --cocoa: #2a1710;
+  --mahogany: #4a2618;
+  --terracotta: #c4623a;
+  --honey: #e8a33d;
+  --sun: #f6c453;
+  --shea: #fbf1e3;
+  --sand: #e9d6bf;
+  --muted: #c9ae95;
+  --good: #8fcf9a;
+  --warn: #f2b45a;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-espresso: var(--espresso);
+  --color-cocoa: var(--cocoa);
+  --color-mahogany: var(--mahogany);
+  --color-terracotta: var(--terracotta);
+  --color-honey: var(--honey);
+  --color-sun: var(--sun);
+  --color-shea: var(--shea);
+  --color-sand: var(--sand);
+  --color-muted: var(--muted);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-body);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--espresso);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(120% 70% at 50% -10%, rgba(246, 196, 83, 0.22), transparent 60%),
+    radial-gradient(90% 60% at 100% 100%, rgba(196, 98, 58, 0.18), transparent 60%),
+    var(--espresso);
+  color: var(--shea);
+  font-family: var(--font-body), system-ui, sans-serif;
 }
+
+@keyframes sun-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+@keyframes rays-turn {
+  to { transform: rotate(360deg); }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+.animate-sun { animation: sun-breathe 6s ease-in-out infinite; }
+.animate-rays { animation: rays-turn 60s linear infinite; transform-origin: center; }
+.rise { animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.rise-1 { animation-delay: 0.1s; }
+.rise-2 { animation-delay: 0.25s; }
+.rise-3 { animation-delay: 0.4s; }
+.rise-4 { animation-delay: 0.55s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-sun, .animate-rays, .rise { animation: none; }
+}
+
+/* YouCam Camera Kit mounts here; keep it inside our rounded frame. */
+#YMK-module { width: 100%; display: flex; justify-content: center; }
+#YMK-module canvas, #YMK-module video { max-width: 100%; border-radius: 1.25rem; }
