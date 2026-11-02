@@ -67,8 +67,23 @@ body {
 .rise-3 { animation-delay: 0.4s; }
 .rise-4 { animation-delay: 0.55s; }
 
+/* Preview tour */
+@keyframes tour-scan { 0% { transform: translateY(0); } 50% { transform: translateY(150px); } 100% { transform: translateY(0); } }
+@keyframes tour-pop { 0% { opacity: 0; transform: scale(0.4); } 60% { opacity: 1; transform: scale(1.15); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes tour-draw { from { stroke-dashoffset: 600; } to { stroke-dashoffset: 0; } }
+@keyframes tour-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes tour-fill { from { width: 0; } to { width: 100%; } }
+
+.tour-scan { animation: tour-scan 3.2s ease-in-out infinite; }
+.tour-pop { opacity: 0; transform-box: fill-box; transform-origin: center; animation: tour-pop 0.6s ease-out forwards; }
+.tour-draw { stroke-dasharray: 600; animation: tour-draw 2.2s ease-out both; }
+.tour-grow { transform-box: fill-box; transform-origin: bottom; animation: tour-grow 0.8s ease-out both; }
+.tour-rise { animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.tour-fill { width: 0; animation: tour-fill linear forwards; }
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-sun, .animate-rays, .rise { animation: none; }
+  .animate-sun, .animate-rays, .rise, .tour-scan, .tour-draw, .tour-grow, .tour-rise { animation: none; }
+  .tour-pop { animation: none; opacity: 1; }
 }
 
 /* YouCam Camera Kit mounts here; keep it inside our rounded frame. */

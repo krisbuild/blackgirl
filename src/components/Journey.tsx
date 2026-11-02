@@ -1,22 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { Consent } from "./Consent";
 import { FaceCapture } from "./FaceCapture";
+import { Tour } from "./Tour";
 import { Welcome } from "./Welcome";
 
-type Step = "welcome" | "consent" | "capture" | "captured";
+type Step = "welcome" | "tour" | "capture" | "captured";
 
 export function Journey() {
   const [step, setStep] = useState<Step>("welcome");
   const [photo, setPhoto] = useState<Blob | null>(null);
 
-  if (step === "welcome") return <Welcome onStart={() => setStep("consent")} />;
-  if (step === "consent") return <Consent onAgree={() => setStep("capture")} onBack={() => setStep("welcome")} />;
+  if (step === "welcome") return <Welcome onStart={() => setStep("tour")} />;
+  if (step === "tour") return <Tour onAgree={() => setStep("capture")} onBack={() => setStep("welcome")} />;
   if (step === "capture")
     return (
       <FaceCapture
-        onBack={() => setStep("consent")}
+        onBack={() => setStep("tour")}
         onCaptured={(p) => {
           setPhoto(p);
           setStep("captured");
