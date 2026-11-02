@@ -22,6 +22,17 @@ Built for the YouCam API Skin AI & eCommerce VTO Hackathon.
 6. **Journal:** every scan is saved privately in Supabase, with a trend chart per concern,
    a then-and-now comparison slider and delete.
 
+### Counting marks, not just scoring them
+
+YouCam's skin scores average over the whole face. On a real scan of a portrait with clearly
+visible post-acne marks, `age_spot` scored **93.8 / 100 ("clear")**. YouCam's own detection
+**mask**, however, marked every spot. So Shine counts the connected blobs on YouCam's dark-mark
+and acne masks (`src/lib/youcam/marks.ts`), measures their share of the face (using the
+moisture map as the face area), and places them by zone using the dark-circle map as the eye
+line. The same scan reads as **14 dark marks** (7 left cheek, 4 right cheek, 2 forehead,
+1 jaw), covering 0.3% of the face, plus **3 acne spots**. The count is what the journal tracks
+week to week, and it drives the plan whenever it is worse than the score.
+
 Redness is flagged in-app as less reliable on deep skin. On our first real scan, YouCam returned
 a perfect 100 for redness on deep skin.
 

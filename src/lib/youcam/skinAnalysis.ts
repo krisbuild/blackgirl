@@ -2,6 +2,8 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { readCache, writeCache } from "./cache";
 import { runTask, uploadImage, YouCamError } from "./client";
+import { alphaBox, countMarks, decodeMask } from "./marks";
+import type { MarkStats } from "../marks-shared";
 
 /**
  * SD concerns relevant to dark marks (post-inflammatory hyperpigmentation) and acne scarring.
@@ -35,6 +37,9 @@ export interface ConcernScore {
   /** 1-100, deliberately flattering per the docs. Shown only as secondary. */
   uiScore: number;
   maskUrl?: string;
+  /** Detections counted on YouCam's mask (dark marks and acne only). */
+  count?: number;
+  coveragePct?: number;
 }
 
 export interface SkinAnalysisResult {
@@ -45,6 +50,8 @@ export interface SkinAnalysisResult {
   skinAge?: number;
   /** e.g. { whole: "Oily", t_zone: "Oily", u_zone: "Normal" } when skin_type was requested */
   skinType?: Record<string, string>;
+  /** Counted from YouCam's own masks: how many, how much of the face, and where. */
+  marks?: { darkMarks?: MarkStats; acne?: MarkStats };
 }
 
 type RawOutput = {
@@ -106,7 +113,18 @@ export async function analyzeSkin(
     .digest("hex");
   const cached = await readCache<{ parsed: SkinAnalysisResult }>("skin", key);
   // Mask URLs expire after ~2 h; scores stay valid, so the cache is still useful.
-  if (cached) return { ...cached.parsed, source: "cache" };
+  if (cached) {
+    const hit: SkinAnalysisResult = { ...cached.parsed, source: "cache" };
+    // Older cache entries predate mark counting; count now (free) while mask URLs are valid.
+    if (!hit.marks) {
+      hit.marks = await measureMarks(hit);
+      for (const c of hit.concerns) {
+        const m = c.concern === "age_spot" ? hit.marks?.darkMarks : c.concern === "acne" ? hit.marks?.acne : undefined;
+        if (m) Object.assign(c, { count: m.count, coveragePct: m.coveragePct });
+      }
+    }
+    return hit;
+  }
 
   const fileId = await uploadImage("skin-analysis", image, contentType);
   const results = await runTask("skin-analysis", {
@@ -120,6 +138,50 @@ export async function analyzeSkin(
     source: "live",
     analyzedAt: new Date().toISOString(),
   };
+  parsed.marks = await measureMarks(parsed);
+  for (const c of parsed.concerns) {
+    const m = c.concern === "age_spot" ? parsed.marks?.darkMarks : c.concern === "acne" ? parsed.marks?.acne : undefined;
+    if (m) {
+      c.count = m.count;
+      c.coveragePct = m.coveragePct;
+    }
+  }
   await writeCache("skin", key, { parsed, raw: results });
   return parsed;
+}
+
+async function fetchMask(url?: string) {
+  if (!url) return null;
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 15_000);
+    const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
+    clearTimeout(t);
+    return res.ok ? decodeMask(new Uint8Array(await res.arrayBuffer())) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Count dark marks and acne on YouCam's masks. Best effort: if a mask can't be fetched or
+ * decoded, the scan still succeeds without counts.
+ */
+export async function measureMarks(r: Pick<SkinAnalysisResult, "concerns">): Promise<SkinAnalysisResult["marks"]> {
+  const url = (k: string) => r.concerns.find((c) => c.concern === k)?.maskUrl;
+  const [spots, acne, face, eyes] = await Promise.all(
+    ["age_spot", "acne", "moisture", "dark_circle_v2"].map((k) => fetchMask(url(k))),
+  );
+  if (!spots && !acne) return undefined;
+  const eyeBox = eyes ? alphaBox(eyes) : null;
+  const opts = { face, eyeTopY: eyeBox?.y0 };
+  try {
+    return {
+      darkMarks: spots ? countMarks(spots, { ...opts, threshold: 32 }) : undefined,
+      acne: acne ? countMarks(acne, { ...opts, threshold: 1, minAreaFrac: 0.00001 }) : undefined,
+    };
+  } catch (e) {
+    console.warn("[marks] counting failed:", (e as Error).message);
+    return undefined;
+  }
 }

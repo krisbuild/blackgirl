@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { prepareForAnalysis } from "@/lib/image";
-import { BAND_LABEL, insightsFrom, type Band, type Insight } from "@/lib/insights";
+import { BAND_LABEL, bandOf, insightsFrom, type Band, type Insight } from "@/lib/insights";
+import { whereSummary, type MarkStats } from "@/lib/marks-shared";
 import { firstScanDate, saveScan, type Analysis } from "@/lib/journal";
 import { DarkMarkPlan } from "./DarkMarkPlan";
 import { SkinViewer } from "./SkinViewer";
@@ -37,6 +38,7 @@ export function ScanResult({
 }) {
   const [phase, setPhase] = useState<Phase>({ kind: "working", step: "preparing" });
   const [url, setUrl] = useState<string | null>(null);
+  const [size, setSize] = useState<{ width: number; height: number } | undefined>();
   const started = useRef(false);
 
   useEffect(() => {
@@ -47,6 +49,7 @@ export function ScanResult({
       try {
         const p = await prepareForAnalysis(photo);
         prepared = p.blob;
+        setSize({ width: p.width, height: p.height });
         setUrl(URL.createObjectURL(prepared));
       } catch (e) {
         setPhase({ kind: "error", message: (e as Error).message });
@@ -135,6 +138,7 @@ export function ScanResult({
     <Results
       analysis={phase.analysis}
       photoUrl={url}
+      size={size}
       scanId={phase.scanId}
       firstScan={phase.firstScan}
       saveError={phase.saveError}
@@ -149,6 +153,7 @@ export function ScanResult({
 function Results({
   analysis,
   photoUrl,
+  size,
   scanId,
   firstScan,
   saveError,
@@ -157,6 +162,7 @@ function Results({
 }: {
   analysis: Analysis;
   photoUrl: string | null;
+  size?: { width: number; height: number };
   scanId?: string;
   firstScan?: string | null;
   saveError?: string;
@@ -177,20 +183,29 @@ function Results({
         Your dark marks, <em className="text-sun">up close</em>
       </h2>
 
-      <SkinViewer photoUrl={photoUrl} analysis={analysis} />
+      <SkinViewer photoUrl={photoUrl} analysis={analysis} size={size} />
 
-      {/* the two headline concerns */}
+      {/* the two headline concerns: counted marks first, YouCam's score second */}
       <div className="mt-5 grid grid-cols-2 gap-3">
         {[darkMarks, acne].filter((x): x is Insight => !!x).map((i) => (
           <div key={i.concern} className="rounded-2xl bg-cocoa/80 p-4 ring-1 ring-mahogany">
             <p className="text-xs uppercase tracking-wider text-muted">{i.label}</p>
-            <p className="mt-1 font-display text-3xl text-shea">{Math.round(i.score)}</p>
+            {i.count != null ? (
+              <p className="mt-1 font-display text-4xl text-shea">
+                {i.count}
+                <span className="ml-1 font-sans text-xs text-muted">found</span>
+              </p>
+            ) : (
+              <p className="mt-1 font-display text-4xl text-shea">{Math.round(i.score)}</p>
+            )}
             <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${BAND_STYLE[i.band]}`}>{BAND_LABEL[i.band]}</span>
-            <ScoreBar score={i.score} compact />
+            <p className="mt-2 text-[11px] text-muted">YouCam score {Math.round(i.score)} / 100</p>
           </div>
         ))}
       </div>
-      {darkMarks && <p className="mt-3 leading-relaxed text-sand">{darkMarks.says[darkMarks.band]}</p>}
+      {darkMarks && <MarkSummary label="dark mark" i={darkMarks} stats={analysis.marks?.darkMarks} />}
+      {darkMarks && <p className="mt-2 leading-relaxed text-sand">{darkMarks.says[darkMarks.band]}</p>}
+      {acne && <MarkSummary label="acne spot" i={acne} stats={analysis.marks?.acne} />}
       {acne && <p className="mt-2 text-sm leading-relaxed text-muted">{acne.says[acne.band]}</p>}
 
       <DarkMarkPlan analysis={analysis} scanId={scanId} firstScan={firstScan} />
@@ -234,23 +249,6 @@ function Results({
   );
 }
 
-function ScoreBar({ score, compact = false }: { score: number; compact?: boolean }) {
-  return (
-    <div className={compact ? "mt-2" : "mt-3"}>
-      <div className="h-2 overflow-hidden rounded-full bg-mahogany">
-        <div className="h-full rounded-full bg-gradient-to-r from-terracotta via-honey to-good" style={{ width: `${Math.max(4, Math.min(100, score))}%` }} />
-      </div>
-      {!compact && (
-        <div className="mt-1 flex justify-between text-[10px] text-muted">
-          <span>More visible</span>
-          <span>{Math.round(score)} / 100</span>
-          <span>Clearer</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function InsightRow({ i, compact = false }: { i: Insight; compact?: boolean }) {
   return (
     <li className={compact ? "" : "rounded-2xl bg-cocoa/70 p-4 ring-1 ring-mahogany"}>
@@ -263,5 +261,28 @@ function InsightRow({ i, compact = false }: { i: Insight; compact?: boolean }) {
       <p className="mt-1 text-sm text-sand">{i.says[i.band]}</p>
       {i.caveat && <p className="mt-1.5 text-xs italic text-muted">{i.caveat}</p>}
     </li>
+  );
+}
+
+/** "YouCam found 14 dark marks, mostly on your left cheek. They cover 0.3% of your face." */
+function MarkSummary({ label, i, stats }: { label: string; i: Insight; stats?: MarkStats }) {
+  if (i.count == null) return null;
+  const where = stats ? whereSummary(stats.zones) : null;
+  const plural = i.count === 1 ? label : `${label}s`;
+  const diluted = i.count >= 4 && bandOf(i.score) === "clear";
+  return (
+    <div className="mt-3 rounded-xl bg-espresso/60 p-3 text-sm leading-relaxed text-sand">
+      <p>
+        YouCam&apos;s detection map shows <strong className="text-shea">{i.count} {plural}</strong>
+        {where ? `, ${where}` : ""}.
+        {i.coveragePct != null && i.coveragePct >= 0.1 ? ` Together they cover ${i.coveragePct}% of your face.` : ""}
+      </p>
+      {diluted && (
+        <p className="mt-1.5 text-xs text-muted">
+          Why the high score? YouCam scores your whole face, so a cluster of marks barely moves it. Counting the marks
+          is a truer way to track your fading, so that&apos;s what your journal follows.
+        </p>
+      )}
+    </div>
   );
 }

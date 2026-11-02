@@ -17,6 +17,8 @@ export function DarkMarkPlan({ analysis, scanId, firstScan }: { analysis: Analys
       buildPlan({
         darkMarks: score(analysis, "age_spot"),
         acne: score(analysis, "acne"),
+        darkMarkCount: analysis.concerns.find((c) => c.concern === "age_spot")?.count,
+        acneCount: analysis.concerns.find((c) => c.concern === "acne")?.count,
         texture: score(analysis, "texture"),
         onset,
         trackedWeeks,

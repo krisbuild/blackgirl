@@ -12,6 +12,22 @@ export function bandOf(score: number): Band {
   return "noticeable";
 }
 
+const BAND_ORDER: Band[] = ["clear", "mild", "moderate", "noticeable"];
+export const worseBand = (a: Band, b: Band): Band => (BAND_ORDER.indexOf(a) >= BAND_ORDER.indexOf(b) ? a : b);
+
+/**
+ * Band from the number of marks counted on YouCam's mask. Whole-face scores dilute small
+ * clusters, so for dark marks and acne we use whichever of score and count is worse.
+ */
+export function bandFromCount(concern: string, count?: number): Band | undefined {
+  if (count == null) return undefined;
+  const steps = concern === "acne" ? [1, 5, 10] : [4, 12, 25];
+  if (count >= steps[2]) return "noticeable";
+  if (count >= steps[1]) return "moderate";
+  if (count >= steps[0]) return "mild";
+  return "clear";
+}
+
 export const BAND_LABEL: Record<Band, string> = {
   clear: "Looking clear",
   mild: "A little",
@@ -139,12 +155,23 @@ export const CONCERNS: Record<string, ConcernInfo> = {
   },
 };
 
-export type Insight = { concern: string; score: number; band: Band } & ConcernInfo;
+export type Insight = { concern: string; score: number; band: Band; count?: number; coveragePct?: number } & ConcernInfo;
 
-export function insightsFrom(concerns: Array<{ concern: string; rawScore: number }>): Insight[] {
+export function insightsFrom(concerns: Array<{ concern: string; rawScore: number; count?: number; coveragePct?: number }>): Insight[] {
   return concerns
     .filter((c) => CONCERNS[c.concern])
-    .map((c) => ({ concern: c.concern, score: c.rawScore, band: bandOf(c.rawScore), ...CONCERNS[c.concern] }))
+    .map((c) => {
+      const fromScore = bandOf(c.rawScore);
+      const fromCount = bandFromCount(c.concern, c.count);
+      return {
+        concern: c.concern,
+        score: c.rawScore,
+        band: fromCount ? worseBand(fromScore, fromCount) : fromScore,
+        count: c.count,
+        coveragePct: c.coveragePct,
+        ...CONCERNS[c.concern],
+      };
+    })
     .sort((a, b) => a.order - b.order);
 }
 

@@ -1,15 +1,17 @@
 "use client";
 
+import type { MarkStats } from "./marks-shared";
 import { ensureUser, supabase } from "./supabase";
 
 /** Shape returned by /api/analyze (see src/lib/youcam/skinAnalysis.ts). */
 export type Analysis = {
   source: "live" | "cache";
   analyzedAt: string;
-  concerns: Array<{ concern: string; rawScore: number; uiScore: number; maskUrl?: string }>;
+  concerns: Array<{ concern: string; rawScore: number; uiScore: number; maskUrl?: string; count?: number; coveragePct?: number }>;
   overall?: number;
   skinAge?: number;
   skinType?: Record<string, string>;
+  marks?: { darkMarks?: MarkStats; acne?: MarkStats };
 };
 
 export type Scan = {
@@ -67,7 +69,12 @@ export async function saveScan(photo: Blob, analysis: Analysis): Promise<Scan> {
       id,
       photo_path: path,
       // mask URLs expire after ~2 h, so only scores are stored
-      concerns: analysis.concerns.map(({ concern, rawScore, uiScore }) => ({ concern, rawScore, uiScore })),
+      concerns: analysis.concerns.map(({ concern, rawScore, uiScore, count, coveragePct }) => ({
+        concern,
+        rawScore,
+        uiScore,
+        ...(count != null ? { count, coveragePct } : {}),
+      })),
       overall: analysis.overall ?? null,
       skin_age: analysis.skinAge ?? null,
       skin_type: analysis.skinType ?? null,
@@ -112,3 +119,6 @@ export async function deleteScan(scan: Pick<Scan, "id" | "photo_path">): Promise
 
 export const scoreOf = (s: Pick<Scan, "concerns">, concern: string) =>
   s.concerns.find((c) => c.concern === concern)?.rawScore;
+
+export const countOf = (s: Pick<Scan, "concerns">, concern: string) =>
+  s.concerns.find((c) => c.concern === concern)?.count;

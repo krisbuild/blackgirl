@@ -15,7 +15,18 @@ const LAYERS = [
  * - "Enhance" boosts contrast so marks on deep skin are easier to see
  * - tap anywhere to zoom in on that spot, tap again to zoom out
  */
-export function SkinViewer({ photoUrl, analysis }: { photoUrl: string | null; analysis: Analysis }) {
+export function SkinViewer({
+  photoUrl,
+  analysis,
+  size,
+}: {
+  photoUrl: string | null;
+  analysis: Analysis;
+  /** Pixel size of the analysed photo, so rings line up with object-cover. */
+  size?: { width: number; height: number };
+}) {
+  const vw = size?.width ?? 750;
+  const vh = size?.height ?? 1000;
   const masks = LAYERS.map((l) => ({ ...l, url: analysis.concerns.find((c) => c.concern === l.key)?.maskUrl })).filter(
     (l): l is (typeof LAYERS)[number] & { url: string } => !!l.url,
   );
@@ -23,6 +34,8 @@ export function SkinViewer({ photoUrl, analysis }: { photoUrl: string | null; an
   const [enhance, setEnhance] = useState(true);
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
   const mask = masks.find((m) => m.key === layer)?.url;
+  const counted = layer === "age_spot" ? analysis.marks?.darkMarks : layer === "acne" ? analysis.marks?.acne : undefined;
+  const rings = counted?.spots.length ? { spots: counted.spots, color: layer === "acne" ? "#ff7aa8" : "#f6c453" } : null;
 
   const onTap = (e: MouseEvent<HTMLDivElement>) => {
     if (zoom) return setZoom(null);
@@ -58,11 +71,36 @@ export function SkinViewer({ photoUrl, analysis }: { photoUrl: string | null; an
             // eslint-disable-next-line @next/next/no-img-element
             <img src={mask} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-90" />
           )}
+          {/* a ring on every mark counted from YouCam's map */}
+          {rings && (
+            <svg viewBox={`0 0 ${vw} ${vh}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full" aria-hidden="true">
+              {rings.spots.map((p, n) => (
+                <circle
+                  key={n}
+                  cx={p.x * vw}
+                  cy={p.y * vh}
+                  r={Math.max(0.012, p.r * 1.9) * vw}
+                  fill="none"
+                  stroke={rings.color}
+                  strokeWidth={zoom ? 1.2 : 2}
+                  vectorEffect="non-scaling-stroke"
+                  className="mark-ring"
+                  style={{ animationDelay: `${n * 40}ms` }}
+                />
+              ))}
+            </svg>
+          )}
         </div>
 
         <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-shea backdrop-blur">
           {zoom ? "Zoomed · tap to reset" : "Tap to zoom"}
         </span>
+        {counted && (
+          <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold text-sun backdrop-blur">
+            {counted.count} {layer === "acne" ? "acne spot" : "dark mark"}
+            {counted.count === 1 ? "" : "s"}
+          </span>
+        )}
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5">

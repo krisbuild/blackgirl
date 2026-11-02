@@ -5,7 +5,7 @@
  * Cosmetic language only ("fade", "calm", "even out"). Professional options are framed as
  * things to ask a dermatologist about, never as instructions.
  */
-import { bandOf, type Band } from "./insights";
+import { bandFromCount, bandOf, worseBand, type Band } from "./insights";
 
 export const ONSETS = [
   { id: "lt1m", label: "Under a month" },
@@ -20,6 +20,9 @@ export type Onset = (typeof ONSETS)[number]["id"];
 export type PlanInput = {
   darkMarks?: number; // raw score, higher = clearer
   acne?: number;
+  /** Counted on YouCam's masks; used when worse than the whole-face score. */
+  darkMarkCount?: number;
+  acneCount?: number;
   texture?: number;
   onset?: Onset;
   /** Weeks since the user's first scan in their journal. */
@@ -53,12 +56,16 @@ export function markAgeMonths(onset?: Onset, trackedWeeks = 0): number | null {
 }
 
 export function buildPlan(input: PlanInput): Plan {
-  const scored = input.darkMarks != null ? bandOf(input.darkMarks) : undefined;
+  const byCount = bandFromCount("age_spot", input.darkMarkCount);
+  const byScore = input.darkMarks != null ? bandOf(input.darkMarks) : undefined;
+  const scored = byScore && byCount ? worseBand(byScore, byCount) : (byScore ?? byCount);
   // If the user tells us their marks appeared at some point, believe them: the camera can
   // under-read marks on deep skin, so never plan as if there were none.
   const userSeesMarks = !!input.onset && input.onset !== "unsure";
   const dm: Band | undefined = userSeesMarks && (!scored || scored === "clear") ? "mild" : scored;
-  const acne = input.acne != null ? bandOf(input.acne) : undefined;
+  const acneScore = input.acne != null ? bandOf(input.acne) : undefined;
+  const acneCount = bandFromCount("acne", input.acneCount);
+  const acne = acneScore && acneCount ? worseBand(acneScore, acneCount) : (acneScore ?? acneCount);
   const texture = input.texture != null ? bandOf(input.texture) : undefined;
   const age = markAgeMonths(input.onset, input.trackedWeeks);
   const oily = Object.values(input.skinType ?? {}).some((t) => /oily/i.test(t));
