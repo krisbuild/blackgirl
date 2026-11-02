@@ -18,7 +18,11 @@ export function Welcome({ onStart, onJournal, onProduct }: { onStart: () => void
         </button>
       </header>
 
-      <div className="relative mx-auto mt-6 w-64 max-w-full">
+      <p className="rise mt-6 text-center font-display text-6xl font-bold leading-none tracking-tight text-sun drop-shadow-[0_4px_24px_rgba(246,196,83,0.35)]">
+        Shine
+      </p>
+
+      <div className="relative mx-auto mt-4 w-64 max-w-full">
         <Sun className="w-full" />
       </div>
 
