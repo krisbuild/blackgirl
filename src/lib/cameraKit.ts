@@ -77,3 +77,29 @@ export async function toBlob(image: string | Blob): Promise<Blob> {
   const dataUrl = image.startsWith("data:") ? image : `data:image/jpeg;base64,${image}`;
   return (await fetch(dataUrl)).blob();
 }
+
+/**
+ * The kit keeps references to its mount node between sessions, so we give it one permanent
+ * #YMK-module element and move it in and out of the camera frame instead of re-creating it.
+ */
+export function cameraKitMount(): HTMLDivElement {
+  let el = document.getElementById("YMK-module") as HTMLDivElement | null;
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "YMK-module";
+  }
+  return el;
+}
+
+/** Park the mount node off-screen (still in the document) when the camera screen closes. */
+export function parkCameraKitMount(el: HTMLElement) {
+  let lot = document.getElementById("ymk-parking");
+  if (!lot) {
+    lot = document.createElement("div");
+    lot.id = "ymk-parking";
+    lot.setAttribute("aria-hidden", "true");
+    lot.style.cssText = "position:fixed;left:-10000px;top:0;width:360px;height:480px;overflow:hidden;";
+    document.body.appendChild(lot);
+  }
+  lot.appendChild(el);
+}

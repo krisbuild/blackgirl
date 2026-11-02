@@ -3,12 +3,14 @@ import { Sun } from "./Sun";
 /** Deep-to-golden tones, shown as a quiet nod to who this is built for. */
 const TONES = ["#3b2219", "#4f2d1f", "#6b3d27", "#8a5234", "#a86b45", "#c48a5f"];
 
-export function Welcome({ onStart }: { onStart: () => void }) {
+export function Welcome({ onStart, onJournal }: { onStart: () => void; onJournal: () => void }) {
   return (
     <section className="mx-auto flex min-h-dvh max-w-md flex-col px-6 pb-10 pt-10">
       <header className="rise flex items-center justify-between text-sm text-muted">
         <span className="font-display text-lg tracking-wide text-sand">Shine</span>
-        <span>Skin journal</span>
+        <button onClick={onJournal} className="rounded-full px-3 py-1 text-sand ring-1 ring-mahogany">
+          My journal
+        </button>
       </header>
 
       <div className="relative mx-auto mt-6 w-64 max-w-full">

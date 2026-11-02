@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { loadCameraKit, toBlob, type CapturedResult, type FaceQuality, type YMKApi } from "@/lib/cameraKit";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { cameraKitMount, loadCameraKit, parkCameraKitMount, toBlob, type CapturedResult, type FaceQuality, type YMKApi } from "@/lib/cameraKit";
 
 type Status = "loading" | "live" | "failed";
 
@@ -83,6 +83,33 @@ export function FaceCapture({
 
   const listenersRef = useRef<number[]>([]);
 
+  const openRef = useRef(false);
+  const slotRef = useRef<HTMLDivElement>(null);
+
+  // Move the kit's permanent mount node into this screen, and park it again on the way out.
+  useLayoutEffect(() => {
+    const el = cameraKitMount();
+    el.className = "absolute inset-0";
+    slotRef.current?.appendChild(el);
+    return () => parkCameraKitMount(el);
+  }, []);
+
+  /**
+   * Close the kit while its mount node still exists. The kit's close() finishes asynchronously
+   * and touches #YMK-module, so we wait briefly before the screen unmounts.
+   */
+  const closeKit = useCallback(async () => {
+    const YMK = ymkRef.current;
+    if (!YMK || !openRef.current) return;
+    openRef.current = false;
+    try {
+      YMK.close();
+    } catch {
+      /* already closed */
+    }
+    await new Promise((r) => setTimeout(r, 450));
+  }, []);
+
   /** Wire events and open the camera once the kit has loaded. */
   const openKit = useCallback((YMK: YMKApi) => {
     ymkRef.current = YMK;
@@ -105,6 +132,7 @@ export function FaceCapture({
         const img = (r as CapturedResult).images?.[0]?.image;
         if (!img) return;
         const blob = await toBlob(img);
+        openRef.current = false;
         YMK.close();
         setPhoto({ blob, url: URL.createObjectURL(blob) });
       }),
@@ -118,6 +146,7 @@ export function FaceCapture({
       width,
       height: Math.round((width * 4) / 3),
     });
+    openRef.current = true;
     // openCameraKit may reject (e.g. "error.no.camera") without firing cameraFailed.
     const opened = YMK.openCameraKit() as unknown;
     if (opened && typeof (opened as Promise<unknown>).catch === "function") {
@@ -144,7 +173,8 @@ export function FaceCapture({
     const onRejection = (e: PromiseRejectionEvent) => {
       if (typeof e.reason === "string" && e.reason.startsWith("error.")) {
         e.preventDefault();
-        ymkRef.current?.close();
+        if (openRef.current) ymkRef.current?.close();
+        openRef.current = false;
         setStatus("failed");
         setError(
           e.reason === "error.no.camera"
@@ -159,7 +189,8 @@ export function FaceCapture({
       const YMK = ymkRef.current;
       listenersRef.current.forEach((id) => YMK?.removeEventListener(id));
       listenersRef.current = [];
-      YMK?.close();
+      if (openRef.current) YMK?.close();
+      openRef.current = false;
       window.removeEventListener("unhandledrejection", onRejection);
     };
   }, [start]);
@@ -177,9 +208,9 @@ export function FaceCapture({
     restart();
   };
 
-  const onFile = (f?: File | null) => {
+  const onFile = async (f?: File | null) => {
     if (!f) return;
-    ymkRef.current?.close();
+    await closeKit();
     setPhoto({ blob: f, url: URL.createObjectURL(f) });
   };
 
@@ -189,7 +220,7 @@ export function FaceCapture({
   return (
     <section className="mx-auto flex min-h-dvh max-w-md flex-col px-5 pb-10 pt-8">
       <div className="flex items-center justify-between">
-        <button onClick={onBack} className="text-sm text-muted">
+        <button onClick={() => closeKit().then(onBack)} className="text-sm text-muted">
           ← Back
         </button>
         <span className="text-xs uppercase tracking-[0.25em] text-honey">Scan · Step 1 of 2</span>
@@ -213,12 +244,13 @@ export function FaceCapture({
         className="relative mt-5 overflow-hidden rounded-[1.5rem] bg-cocoa ring-1 ring-mahogany"
         style={{ aspectRatio: "3 / 4" }}
       >
+        {/* The kit's permanent #YMK-module node is moved in here (see cameraKitMount). */}
+        <div ref={slotRef} className={`absolute inset-0 ${photo ? "invisible" : ""}`} />
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo.url} alt="Your selfie" className="h-full w-full object-cover" />
+          <img src={photo.url} alt="Your selfie" className="absolute inset-0 h-full w-full object-cover" />
         ) : (
           <>
-            <div id="YMK-module" className="absolute inset-0" />
             {status === "loading" && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-sand">
                 <span className="h-10 w-10 animate-spin rounded-full border-2 border-honey/30 border-t-honey" />
@@ -251,7 +283,7 @@ export function FaceCapture({
             Retake
           </button>
           <button
-            onClick={() => onCaptured(photo.blob)}
+            onClick={() => closeKit().then(() => onCaptured(photo.blob))}
             className="rounded-full bg-gradient-to-r from-honey to-sun py-4 font-semibold text-espresso"
           >
             Use this photo

@@ -7,13 +7,23 @@ Built for the YouCam API Skin AI & eCommerce VTO Hackathon.
 > Cosmetic guidance only. This app does not diagnose or treat any condition. See a
 > dermatologist for medical concerns.
 
-## Status
+## What it does
 
-- [x] Server-side YouCam V2 client: upload → pre-signed PUT → create task → bounded polling
-- [x] `POST /api/analyze`: Skin Analysis (SD) with a result cache and friendly errors
-- [ ] Guided capture UI, plain-language explanation, history & compare, next steps
-- [ ] Skin Tone / Fitzpatrick analysis for confidence messaging
-- [ ] Deep-skin-tone accuracy findings (Fitzpatrick V–VI)
+1. **Welcome:** "Hello, sunshine."
+2. **Preview:** a live scan showcase on a real 478-point face mesh (MediaPipe landmarks)
+   pointing at dark marks, acne, texture, dark undereyes and sunburn.
+3. **Guided capture:** the **YouCam JS Camera Kit** (skincare mode) checks light, angle and
+   distance live and captures automatically. Upload is the fallback.
+4. **Analysis:** the server sends the photo to **YouCam AI Skin Analysis** (upload → task → bounded
+   polling), caching by image hash so a photo never spends units twice.
+5. **Results:** warm, cosmetic-only explanations led by dark marks. YouCam's own detection masks
+   can be shown over your photo, alongside ingredient picks matched to the scan and skin type,
+   what to skip, and realistic timelines.
+6. **Journal:** every scan is saved privately in Supabase, with a trend chart per concern,
+   a then-and-now comparison slider and delete.
+
+Redness is flagged in-app as less reliable on deep skin. On our first real scan, YouCam returned
+a perfect 100 for redness on deep skin.
 
 ## Setup
 
@@ -28,6 +38,13 @@ on the server (`process.env.YOUCAM_API_KEY`). Never give it a `NEXT_PUBLIC_` pre
 
 Without a key, `/api/analyze` responds `503` ("live analysis isn't configured"). Every result
 is a real YouCam analysis.
+
+### Tests
+
+```bash
+npm test          # parser, insight bands, ingredient picks, banned-medical-wording check
+npm run verify:db # row-level security checks against your Supabase project
+```
 
 ### Database (Supabase)
 

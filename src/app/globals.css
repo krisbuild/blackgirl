@@ -79,6 +79,10 @@ body {
 .tour-grow { transform-box: fill-box; transform-origin: bottom; animation: tour-grow 0.8s ease-out both; }
 .tour-rise { animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 
+/* Analysis in progress */
+@keyframes analyze-beam { 0% { top: -6rem; } 100% { top: 100%; } }
+.analyze-beam { animation: analyze-beam 2.4s ease-in-out infinite alternate; }
+
 /* Scan showcase */
 @keyframes scan-fade-in { from { opacity: 0; } }
 @keyframes scan-ping { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.9); opacity: 0; } }
@@ -89,7 +93,7 @@ body {
 .scan-progress { animation: scan-progress 6.8s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-sun, .animate-rays, .rise, .tour-scan, .tour-draw, .tour-grow, .tour-rise,
+  .analyze-beam, .animate-sun, .animate-rays, .rise, .tour-scan, .tour-draw, .tour-grow, .tour-rise,
   .scan-fade-in, .scan-ping, .scan-progress { animation: none; }
   .tour-pop { animation: none; opacity: 1; }
 }
