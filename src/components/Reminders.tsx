@@ -122,8 +122,8 @@ export function Reminders() {
       </a>
       <p className="mt-2 text-[11px] leading-relaxed text-muted">
         {added
-          ? "Tap \"Add All\" (iPhone) or open the downloaded file (Android) to save them. Your phone will alert you every day, even when Seen is closed."
-          : "They go into your phone's calendar with an alert, so they ring even when Seen is closed. To stop them, delete the Seen events."}
+          ? "Tap \"Add All\" (iPhone) or open the downloaded file (Android) to save them. Your phone will alert you every day, even when Shine is closed."
+          : "They go into your phone's calendar with an alert, so they ring even when Shine is closed. To stop them, delete the Shine events."}
       </p>
     </section>
   );

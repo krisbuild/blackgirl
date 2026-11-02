@@ -15,7 +15,7 @@ const sans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Seen: a skin journal for melanin-rich skin",
+  title: "Shine: a skin journal for melanin-rich skin",
   description:
     "Track dark marks and acne scars fading, week by week. Made for Black women, powered by YouCam AI Skin Analysis.",
 };

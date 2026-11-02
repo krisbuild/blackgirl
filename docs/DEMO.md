@@ -1,4 +1,4 @@
-# Seen: demo guide
+# Shine: demo guide
 
 Everything needed to record the 1–3 minute Devpost video. All numbers below come from **real YouCam API
 calls** made on 2026-11-02 against a team member's own selfie (shared with consent; the photo itself is
@@ -8,7 +8,7 @@ kept out of this public repo).
 
 ## The story in one line
 
-> Dark marks are the #1 skin concern for melanin-rich skin, and a whole-face score hides them. Seen counts
+> Dark marks are the #1 skin concern for melanin-rich skin, and a whole-face score hides them. Shine counts
 > every mark on YouCam's own detection map, so Black women can actually watch them fade.
 
 ## Devpost video checklist
@@ -28,20 +28,20 @@ live app open at <https://blackgirl-zeta.vercel.app>. Screenshots for close-ups 
 
 | Time | On screen | Say |
 |---|---|---|
-| 0:00 | Welcome | "Hello, sunshine. Dark marks after acne are the number one skin concern for Black women, and most skin apps weren't built for our skin. This is Seen." |
-| 0:10 | Tap **How accurate is this on deep skin?** | "Seen is honest about accuracy. We tested YouCam on deep skin and show what it catches and misses." |
-| 0:18 | Scan preview → **Start my scan** | "Seen uses two YouCam APIs: the JS Camera Kit for guided capture, and AI Skin Analysis." |
+| 0:00 | Welcome | "Hello, sunshine. Dark marks after acne are the number one skin concern for Black women, and most skin apps weren't built for our skin. This is Shine." |
+| 0:10 | Tap **How accurate is this on deep skin?** | "Shine is honest about accuracy. We tested YouCam on deep skin and show what it catches and misses." |
+| 0:18 | Scan preview → **Start my scan** | "Shine uses two YouCam APIs: the JS Camera Kit for guided capture, and AI Skin Analysis." |
 | 0:25 | Guided camera (live) | "The Camera Kit checks my distance, angle and light live and takes the photo itself. You can also upload a photo." |
 | 0:35 | Analysing | "The photo goes to YouCam's skin analysis on our server, in HD. The API key never touches the phone." |
-| 0:42 | Results, rings on the face | "YouCam scored my dark marks 87 out of 100, 'clear'. But its own detection map marked 61 of them. So Seen counts every mark and rings it. Tap to zoom." |
+| 0:42 | Results, rings on the face | "YouCam scored my dark marks 87 out of 100, 'clear'. But its own detection map marked 61 of them. So Shine counts every mark and rings it. Tap to zoom." |
 | 1:00 | Mirror check → **I have more** | "AI can miss spots on deep skin, so I get the last word. I see more acne than 8, so my plan gets stronger." |
 | 1:08 | Reading confidence card | "It tells me how much to trust this photo." |
-| 1:13 | Mark age + plan | "A photo can't date a mark, so Seen asks. Then a plan: calm the breakouts, fade with azelaic acid and niacinamide, sunscreen with no white cast every day." |
+| 1:13 | Mark age + plan | "A photo can't date a mark, so Shine asks. Then a plan: calm the breakouts, fade with azelaic acid and niacinamide, sunscreen with no white cast every day." |
 | 1:25 | **Why these** + budget chips | "Every product is real and checked against its full ingredient list. It tells me why: niacinamide helps fade dark marks. Anything that doesn't suit my skin is left out, with the reason." |
 | 1:38 | Product check (paste or photo) | "Already have a cream? This one has a steroid, mercury and hydroquinone, which can damage deep skin. Avoid." |
 | 1:48 | My routine → rating | "Or check my whole routine. 8.5 out of 10, and one thing to change." |
 | 1:55 | Journal | "Every scan is private. The journal tracks the count week by week. This chart is clearly marked as demo data until my second scan." |
-| 2:05 | Back to welcome | "Cosmetic guidance, not a diagnosis. Seen. Because you shine like the sun." |
+| 2:05 | Back to welcome | "Cosmetic guidance, not a diagnosis. Shine. Because you shine like the sun." |
 
 ## Screenshots (`docs/screenshots/`)
 
@@ -66,7 +66,7 @@ live app open at <https://blackgirl-zeta.vercel.app>. Screenshots for close-ups 
 
 YouCam AI Skin Analysis V2, SD, all 16 concerns, one call (16 credits). Raw score: 1–100, higher = clearer.
 
-| Concern | Raw score | YouCam "UI" score | Seen counted on the mask | Notes |
+| Concern | Raw score | YouCam "UI" score | Shine counted on the mask | Notes |
 |---|---|---|---|---|
 | **Dark marks** (age_spot) | 86.6 | 78 | **44 marks**: 25 forehead · 9 left cheek · 7 right cheek · 2 nose/mouth · 1 jaw; 1.1% of face | Score says "clear", the map disagrees |
 | **Acne** | 78.4 | 80 | **9 spots**: 7 forehead · 1 cheek · 1 jaw | User reports more; photo is 543×800 with cheek glare |
@@ -102,7 +102,7 @@ on the same photo.
 - **AI Skin Analysis V2** (`/s2s/v2.0/file` → `/task` → bounded polling): 10 concerns per scan, SD (14 credits)
   or **HD automatically** when the photo's short side ≥ 1080 px (20 credits). Results are cached by image hash,
   so a photo is never paid for twice.
-- **YouCam detection masks**: Seen downloads the dark-mark, acne, moisture and dark-circle maps, counts
+- **YouCam detection masks**: Shine downloads the dark-mark, acne, moisture and dark-circle maps, counts
   connected blobs, measures coverage of the face and places each mark by zone (`src/lib/youcam/marks.ts`).
 - **JS Camera Kit** (skincare mode): live face, lighting, angle and distance checks with auto-capture.
 - **Product check:** on-device label reading (Tesseract.js, served from the app) plus transparent ingredient
