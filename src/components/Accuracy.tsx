@@ -9,7 +9,7 @@ import { createPortal } from "react-dom";
  */
 const POINTS = [
   { icon: "✓", tone: "text-good", text: "Tested on deep skin (Fitzpatrick V–VI): an HD selfie found 61 dark marks and 8 acne spots, mapped to the right places." },
-  { icon: "!", tone: "text-honey", text: "The score alone can read \"clear\" when the map shows dozens of marks, so Shine leads with the count." },
+  { icon: "!", tone: "text-honey", text: "The score alone can read \"clear\" when the map shows dozens of marks, so Seen leads with the count." },
   { icon: "!", tone: "text-honey", text: "Small, flat or glare-covered spots can be missed. Tap \"I have more\" and your plan adjusts. Redness isn't rated on deep skin." },
   { icon: "◎", tone: "text-sun", text: "The camera checks distance, angle and light before taking the photo, and zooms in once if your face is too far away." },
 ];

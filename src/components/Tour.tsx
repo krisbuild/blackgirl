@@ -75,11 +75,11 @@ export function Tour({ onStart, onBack }: { onStart: () => void; onBack: () => v
         <button onClick={onBack} className="text-sm text-muted">
           ← Back
         </button>
-        <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-honey">How Shine works</span>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-honey">How Seen works</span>
       </div>
 
       <h2 className="rise mt-2 font-display text-[1.75rem] leading-[1.1] [@media(max-height:700px)]:text-2xl">
-        See your skin the way <em className="text-sun">Shine sees it</em>
+        See your skin the way <em className="text-sun">Seen sees it</em>
       </h2>
 
       <ScanShowcase className="rise rise-1 mt-3 min-h-[240px] flex-1" />

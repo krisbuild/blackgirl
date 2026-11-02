@@ -286,7 +286,7 @@ export function DarkMarkPlan({
           )}
 
           <details className="mt-4 rounded-2xl bg-cocoa/60 p-4 ring-1 ring-mahogany">
-            <summary className="cursor-pointer text-sm font-semibold text-sand">How Shine reached this</summary>
+            <summary className="cursor-pointer text-sm font-semibold text-sand">How Seen reached this</summary>
             <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs leading-relaxed text-muted">
               {result.method.map((m) => (
                 <li key={m}>{m}</li>

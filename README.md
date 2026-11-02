@@ -1,22 +1,22 @@
-# Shine: a dark-mark and acne tracker for melanin-rich skin
+# Seen: a dark-mark and acne tracker for melanin-rich skin
 
 **Live app:** <https://blackgirl-zeta.vercel.app> (open it on your phone)
 
 Dark marks after acne (post-inflammatory hyperpigmentation) are the number one skin concern for Black women,
-and most skin apps weren't built for deep skin. Shine counts every dark mark and acne spot on
+and most skin apps weren't built for deep skin. Seen counts every dark mark and acne spot on
 **YouCam's AI Skin Analysis** detection maps, builds a cosmetic plan with real, ingredient-checked products,
 and tracks the marks week by week as they fade.
 
 Built for the YouCam API Skin AI & eCommerce VTO Hackathon (Perfect Corp).
 
-> **Cosmetic guidance, not a diagnosis.** Shine does not diagnose any condition. See a dermatologist
+> **Cosmetic guidance, not a diagnosis.** Seen does not diagnose any condition. See a dermatologist
 > for persistent or severe concerns.
 
 ## YouCam APIs used
 
-| API | How Shine uses it |
+| API | How Seen uses it |
 |---|---|
-| **AI Skin Analysis (V2)** | Server-side: upload → task → bounded polling. 10 concerns per scan, **HD automatically** when the photo's short side is ≥ 1080 px. Shine uses the honest `raw_score`, not the inflated `ui_score`, and **counts the marks on YouCam's own detection masks** (connected blobs, face zones, % of face). |
+| **AI Skin Analysis (V2)** | Server-side: upload → task → bounded polling. 10 concerns per scan, **HD automatically** when the photo's short side is ≥ 1080 px. Seen uses the honest `raw_score`, not the inflated `ui_score`, and **counts the marks on YouCam's own detection masks** (connected blobs, face zones, % of face). |
 | **JS Camera Kit** (skincare mode) | Guided capture: live checks for face found, distance, facing forward and light, then automatic capture. |
 
 ## Screenshots
@@ -43,7 +43,7 @@ Screens below use a sample portrait. All numbers come from real YouCam calls.
 4. **Dark mark plan:** Calm & protect → Fade → Renew, adjusted for mark age, pregnancy (no retinoids), sensitive
    skin and warning signs (dermatologist first). Every step lists real products at three price bands, with
    **"Why these"** (the key ingredient and what it does) and what was **left out for your skin** and why.
-5. **Product check:** photograph an ingredient list (read on the phone with Tesseract.js) or paste it. Shine flags
+5. **Product check:** photograph an ingredient list (read on the phone with Tesseract.js) or paste it. Seen flags
    **mercury, steroids such as clobetasol, and hydroquinone** as Avoid, and pore-clogging oils and irritants as
    Use with care. It reads labels only and can't tell whether a product is genuine.
 6. **My routine:** list your products for morning and night. Each one is matched to its real ingredient list and
@@ -54,7 +54,7 @@ Screens below use a sample portrait. All numbers come from real YouCam calls.
    **"Demo data"** shows what tracking looks like; it is never mixed with real results.
 8. **Daily reminders:** "Apply sunscreen" (plus an optional midday reapply) and "Drink water" every 2 or 3 hours,
    at times you choose. `GET /api/reminders` builds a calendar file of daily events with alerts, so they ring even
-   when Shine is closed (a website can't send scheduled notifications on iPhone).
+   when Seen is closed (a website can't send scheduled notifications on iPhone).
 9. **How accurate is this?** A small in-app card (and the section below) with our deep-skin test results.
 
 ### How the assessment works (server-side)
@@ -73,7 +73,7 @@ Screens below use a sample portrait. All numbers come from real YouCam calls.
    as Product check for *this* user; otherwise it's listed as "left out for your skin" with the reason. For oily,
    acne-prone skin, for example, Black Girl Sunscreen is left out for cocoa butter and Bolden SPF 30 for fragrance.
 
-The result is a cosmetic assessment with its working shown ("What we measured", "How Shine reached this"), not a
+The result is a cosmetic assessment with its working shown ("What we measured", "How Seen reached this"), not a
 medical diagnosis.
 
 
@@ -81,7 +81,7 @@ medical diagnosis.
 
 YouCam's skin scores average over the whole face. On a real scan of a portrait with clearly
 visible post-acne marks, `age_spot` scored **93.8 / 100 ("clear")**. YouCam's own detection
-**mask**, however, marked every spot. So Shine counts the connected blobs on YouCam's dark-mark
+**mask**, however, marked every spot. So Seen counts the connected blobs on YouCam's dark-mark
 and acne masks (`src/lib/youcam/marks.ts`), measures their share of the face (using the
 moisture map as the face area), and places them by zone using the dark-circle map as the eye
 line. The same scan reads as **14 dark marks** (7 left cheek, 4 right cheek, 2 forehead,
@@ -101,20 +101,20 @@ The same findings are shown in the app ("How accurate is this?" on the welcome s
 
 What we learned:
 - **Scores hide marks.** In both photos with visible marks, the dark-mark score read "clear" while YouCam's own mask
-  marked 14 and 44 spots. Shine leads with the count.
+  marked 14 and 44 spots. Seen leads with the count.
 - **Redness reads 100 on every deep-skin photo** we tried, so the app labels it as unreliable on melanin-rich skin.
 - **Acne was under-counted** on the real selfie (the user sees more than 9). Likely causes: low resolution and glare.
-  Shine now (1) switches to YouCam's **HD** analysis automatically when the photo's short side is ≥ 1080 px,
+  Seen now (1) switches to YouCam's **HD** analysis automatically when the photo's short side is ≥ 1080 px,
   (2) asks "Does this match your mirror?" and plans for more when the user says so, and (3) tells users to blot shine.
 
-- **HD finds more.** The same selfie at HD found 61 dark marks against 44 at standard resolution, so Shine
+- **HD finds more.** The same selfie at HD found 61 dark marks against 44 at standard resolution, so Seen
   uses HD automatically and shows "Reading confidence: lower" on results from smaller or zoomed photos.
 
 #### Capture errors we hit, and how the app prevents them
 
-| Error | What happened | What Shine does |
+| Error | What happened | What Seen does |
 |---|---|---|
-| `error_src_face_too_small` | Our first phone scans failed: YouCam needs the face to fill most of the width. | The guided camera says "come a little closer"; if a photo is still too far, Shine crops to the face and retries once automatically (tested: 422 → 200). |
+| `error_src_face_too_small` | Our first phone scans failed: YouCam needs the face to fill most of the width. | The guided camera says "come a little closer"; if a photo is still too far, Seen crops to the face and retries once automatically (tested: 422 → 200). |
 | `error_large_face_angle` ("turned too far") | YouCam rejects turned or tilted faces. | The guided camera's live check waits for "facing forward, chin level"; the error message tells the user to look straight at the camera. |
 | Shadows and glare | Overhead light and oily shine can look like, or hide, dark marks on deep skin. | Live lighting check, plus tips to face a window and blot shine. |
 

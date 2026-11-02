@@ -1,11 +1,11 @@
-# Devpost submission: Shine
+# Devpost submission: Seen
 
 Copy each section into the matching Devpost field.
 
 ---
 
 ## Project name
-Shine
+Seen
 
 ## Tagline (elevator pitch)
 A dark-mark and acne tracker for Black women that counts every mark on YouCam's AI Skin Analysis map, so you can watch them fade.
@@ -22,10 +22,10 @@ Dark marks left behind by acne (post-inflammatory hyperpigmentation) are the num
 
 ## What it does
 - **Guided capture:** the YouCam JS Camera Kit checks distance, angle and light live and takes the photo. Tips are written for deep skin and textured hair (face a window, pull hair back, blot shine). You can also upload a photo.
-- **Counts, not just scores:** YouCam AI Skin Analysis runs on our server, in HD when the photo allows. Shine counts every dark mark and acne spot on YouCam's own detection maps, shows where they are (forehead, cheeks, chin) and rings each one on the photo.
+- **Counts, not just scores:** YouCam AI Skin Analysis runs on our server, in HD when the photo allows. Seen counts every dark mark and acne spot on YouCam's own detection maps, shows where they are (forehead, cheeks, chin) and rings each one on the photo.
 - **You get the last word:** "Does this match your mirror?" If you see more, the plan gets stronger. A reading-confidence card says when a photo was too small or soft.
 - **A plan with reasons:** Calm & protect → Fade → Renew, adjusted for how long the marks have been there, pregnancy (no retinoids), sensitive skin and warning signs (dermatologist first). Every step lists real products at three price bands, says **why** (for example, "niacinamide helps fade dark marks"), and shows which products were left out for your skin and why.
-- **Product check and routine rating:** photograph or paste an ingredient list. Shine flags mercury, steroids such as clobetasol, and hydroquinone, which are common in skin-bleaching creams, and rates your whole routine out of 10.
+- **Product check and routine rating:** photograph or paste an ingredient list. Seen flags mercury, steroids such as clobetasol, and hydroquinone, which are common in skin-bleaching creams, and rates your whole routine out of 10.
 - **Daily reminders:** "Apply sunscreen" every morning and "Drink water" every few hours, added to the phone's calendar with alerts so they ring even when the app is closed.
 - **Private journal:** every scan is saved to an anonymous, private account with a trend chart, a then-and-now slider and delete. Until there's a second scan, an example chart is clearly labelled "Demo data".
 
@@ -41,7 +41,7 @@ Dark marks left behind by acne (post-inflammatory hyperpigmentation) are the num
 ## Challenges we ran into
 - **Scores hid the marks.** On a real deep-skin selfie, the dark-mark score read 87/100, "clear", while YouCam's own map marked 61 spots. We switched to counting the marks on the map.
 - **HD masks counted as one giant mark,** because HD masks carry a dark background layer by default. We turned it off and subtract the background alpha.
-- **"Face too small" on phones:** YouCam needs the face to fill most of the photo. The camera now says "come closer", and if a photo is still too far, Shine crops to the face and retries once.
+- **"Face too small" on phones:** YouCam needs the face to fill most of the photo. The camera now says "come closer", and if a photo is still too far, Seen crops to the face and retries once.
 - **A pasted API key with hidden characters** made every live call fail. We added a health check (`/api/health`) that reports whether the key is well formed without revealing it.
 
 ## Accomplishments that we're proud of
@@ -54,7 +54,7 @@ Dark marks left behind by acne (post-inflammatory hyperpigmentation) are the num
 - HD matters: the same selfie found 61 dark marks at HD and 44 at standard resolution.
 - Redness read a perfect 100 on every deep-skin photo we tried, so we label it unreliable instead of rating it.
 
-## What's next for Shine
+## What's next for Seen
 - Test on more deep-skin photos in different lighting and publish the results.
 - Add YouCam's Skin Tone and Fitzpatrick analysis to adjust confidence by skin tone automatically.
 - Hair and scalp care for edges and traction alopecia.
