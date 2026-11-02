@@ -333,6 +333,23 @@ export function FaceCapture({
         </div>
       ) : (
         <>
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full py-3.5 font-semibold text-sand ring-1 ring-mahogany transition active:scale-[0.98]"
+          >
+            <span aria-hidden="true">⤒</span> Upload a photo instead
+          </button>
+          <p className="mt-1.5 text-center text-[11px] text-muted">A clear, front-facing selfie in daylight works best.</p>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png"
+            className="hidden"
+            onChange={(e) => {
+              void onFile(e.target.files?.[0]);
+              e.target.value = ""; // let the same photo be picked again
+            }}
+          />
           <ul className={`mt-5 grid grid-cols-2 gap-2 ${simple ? "hidden" : ""}`} aria-live="polite">
             {list.map((c) => (
               <li
@@ -367,16 +384,6 @@ export function FaceCapture({
             </ul>
           </details>
 
-          <button onClick={() => fileRef.current?.click()} className="mt-5 text-center text-sm text-honey underline-offset-4 hover:underline">
-            No camera? Upload a photo instead
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/jpeg,image/png"
-            className="hidden"
-            onChange={(e) => onFile(e.target.files?.[0])}
-          />
         </>
       )}
     </section>
