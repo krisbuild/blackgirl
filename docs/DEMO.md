@@ -31,7 +31,8 @@ kept out of this public repo).
 | 1:00 | **07-zoom-forehead**, **08-zoom-cheek** | "Tap to zoom. 25 on my forehead, 9 on my left cheek, 7 on my right." |
 | 1:10 | **09-acne-ringed**, **11-mirror-check-acne** | "Acne: YouCam found 9. I have more than that, so I tell Shine, and my plan adjusts. AI can miss spots on deep skin, so the user gets the last word." |
 | 1:25 | **12-mark-age** | "A photo can't date a mark, so Shine asks how long they've been there, and the journal counts from today." |
-| 1:35 | **13-dark-mark-plan**, **14-ground-rules-dermatologist** | "Then a plan: calm the breakouts, fade with azelaic acid and niacinamide, renew with adapalene, sunscreen with no white cast every day, and honest timelines. It also warns that the wrong laser can deepen marks on dark skin." |
+| 1:35 | **13-dark-mark-plan**, **13b-plan-products** | "Then a plan: calm the breakouts, fade with azelaic acid and niacinamide, renew with adapalene, and sunscreen with no white cast every day, with real products for each step, including Black-owned brands." |
+| 1:45 | **19-product-check-avoid**, **20-product-check-great** (live on phone) | "Already have a product? Snap the ingredient list. This 'toning' cream has a steroid and hydroquinone: avoid. This niacinamide serum: a great match for my skin." |
 | 1:52 | **16-journal** | "Every scan is private to me, and my journal tracks the count, so I can see 44 become 30 become 20." |
 | 2:02 | **10-counts-vs-score** | "Honest about accuracy: on every deep-skin photo we tested, redness read a perfect 100, so Shine labels it unreliable. Shine. Because you shine like the sun." |
 
@@ -58,6 +59,11 @@ part, and use the screenshots in `demo-kit` for close-ups.
 | 14-ground-rules-dermatologist | Ground rules, dermatologist pointers, laser caution |
 | 15-results-full-page | Whole results page |
 | 16-journal | Weeks tracked, mark age, counts, history |
+| 13b-plan-products | Named products under each plan step (Black-owned tagged) |
+| 13c-check-a-product-cta | "Already have a product?" → Check a product |
+| 17-youcam-dark-mark-map / 18-youcam-acne-map | YouCam's raw masks with Shine's rings |
+| 19-product-check-avoid | Label photo → steroid + hydroquinone → **Avoid** |
+| 20-product-check-great | Label photo → niacinamide + zinc PCA → **Great match** |
 
 ## Real results: full 16-concern YouCam scan of the team member's selfie
 
@@ -102,6 +108,10 @@ on the same photo.
 - **YouCam detection masks**: Shine downloads the dark-mark, acne, moisture and dark-circle maps, counts
   connected blobs, measures coverage of the face and places each mark by zone (`src/lib/youcam/marks.ts`).
 - **JS Camera Kit** (skincare mode): live face, lighting, angle and distance checks with auto-capture.
+- **Product check:** on-device label reading (Tesseract.js, served from the app) plus transparent ingredient
+  rules: bleaching agents (mercury, steroids such as clobetasol, hydroquinone) → Avoid; pore-cloggers for oily or
+  acne-prone skin; irritants; ingredients that help dark marks and acne, matched to the user's latest scan.
+  It reads the label only and does not claim to detect counterfeits.
 - The API key stays server-side; photos and scans are private per user via Supabase row-level security.
 
 ## Credits used

@@ -18,7 +18,7 @@ const METRICS: Metric[] = [
 
 const fmt = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 
-export function Journal({ onNewScan, onHome }: { onNewScan: () => void; onHome: () => void }) {
+export function Journal({ onNewScan, onHome, onProduct }: { onNewScan: () => void; onHome: () => void; onProduct?: () => void }) {
   const [scans, setScans] = useState<Scan[] | null>(null);
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
@@ -160,6 +160,11 @@ export function Journal({ onNewScan, onHome }: { onNewScan: () => void; onHome: 
       <button onClick={onNewScan} className="mt-8 w-full rounded-full bg-gradient-to-r from-honey to-sun py-4 text-lg font-semibold text-espresso">
         {scans?.length ? "Scan this week" : "Take my first scan"}
       </button>
+      {onProduct && (
+        <button onClick={onProduct} className="mt-3 w-full rounded-full py-3.5 font-semibold text-sand ring-1 ring-mahogany">
+          Check a skincare product
+        </button>
+      )}
       <p className="mt-3 text-center text-[11px] text-muted">Photos are private to you. Delete any scan whenever you like.</p>
     </section>
   );

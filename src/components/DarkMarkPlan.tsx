@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { weeksSince, type Analysis, type ScanNote } from "@/lib/journal";
 import { buildPlan, markAgeMonths, ONSETS, type Onset } from "@/lib/plan";
+import { productsFor } from "@/lib/products";
 
 const score = (a: Analysis, k: string) => a.concerns.find((c) => c.concern === k)?.rawScore;
 
@@ -13,12 +14,14 @@ export function DarkMarkPlan({
   note,
   onNote,
   noteStatus,
+  onCheckProduct,
 }: {
   analysis: Analysis;
   firstScan?: string | null;
   note: ScanNote;
   onNote: (patch: ScanNote) => void;
   noteStatus?: string | null;
+  onCheckProduct?: () => void;
 }) {
   const onset = note.markOnset as Onset | undefined;
   const saveNote = noteStatus;
@@ -107,6 +110,20 @@ export function DarkMarkPlan({
                   <span>
                     <span className="text-sm font-semibold text-shea">{st.name}</span>
                     <span className="block text-xs leading-relaxed text-muted">{st.note}</span>
+                    {productsFor(st.name, analysis.skinType).length > 0 && (
+                      <span className="mt-1.5 flex flex-wrap gap-1.5">
+                        {productsFor(st.name, analysis.skinType).map((pr) => (
+                          <span
+                            key={pr.brand + pr.name}
+                            title={pr.note}
+                            className="rounded-lg bg-espresso/70 px-2 py-1 text-[11px] leading-tight text-sand ring-1 ring-mahogany"
+                          >
+                            <span className="font-semibold text-shea">{pr.brand}</span> {pr.name}
+                            {pr.blackOwned && <span className="ml-1 rounded bg-honey/20 px-1 text-[9px] font-semibold text-honey">Black-owned</span>}
+                          </span>
+                        ))}
+                      </span>
+                    )}
                   </span>
                 </li>
               ))}
@@ -123,6 +140,21 @@ export function DarkMarkPlan({
           ))}
         </ul>
       </div>
+
+      <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-cocoa/80 p-4 ring-1 ring-mahogany">
+        <div>
+          <p className="text-sm font-semibold text-shea">Already have a product?</p>
+          <p className="text-xs text-muted">Scan its ingredient list to see if it suits your skin.</p>
+        </div>
+        {onCheckProduct && (
+          <button onClick={onCheckProduct} className="shrink-0 rounded-full bg-gradient-to-r from-honey to-sun px-4 py-2 text-sm font-semibold text-espresso">
+            Check a product
+          </button>
+        )}
+      </div>
+      <p className="mt-2 text-[11px] leading-relaxed text-muted">
+        Product picks are examples, not sponsored. Formulas and availability change, so buy from trusted retailers and check the label.
+      </p>
 
       {plan.dermatologist.show && (
         <div className="mt-4 rounded-2xl bg-terracotta/10 p-4 ring-1 ring-terracotta/40">

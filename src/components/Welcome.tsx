@@ -3,7 +3,7 @@ import { Sun } from "./Sun";
 /** Deep-to-golden tones, shown as a quiet nod to who this is built for. */
 const TONES = ["#3b2219", "#4f2d1f", "#6b3d27", "#8a5234", "#a86b45", "#c48a5f"];
 
-export function Welcome({ onStart, onJournal }: { onStart: () => void; onJournal: () => void }) {
+export function Welcome({ onStart, onJournal, onProduct }: { onStart: () => void; onJournal: () => void; onProduct: () => void }) {
   return (
     <section className="mx-auto flex min-h-dvh max-w-md flex-col px-6 pb-10 pt-10">
       <header className="rise flex items-center justify-between text-sm text-muted">
@@ -43,6 +43,9 @@ export function Welcome({ onStart, onJournal }: { onStart: () => void; onJournal
           className="w-full rounded-full bg-gradient-to-r from-honey to-sun px-6 py-4 text-lg font-semibold text-espresso shadow-[0_10px_40px_-10px_rgba(246,196,83,0.7)] transition active:scale-[0.98]"
         >
           Start my first scan
+        </button>
+        <button onClick={onProduct} className="mt-3 w-full rounded-full px-6 py-3.5 font-semibold text-sand ring-1 ring-mahogany transition active:scale-[0.98]">
+          Check a skincare product
         </button>
         <ul className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-muted">
           <li>Private to you</li>

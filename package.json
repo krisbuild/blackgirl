@@ -10,15 +10,19 @@
     "smoke": "bash scripts/smoke-analyze.sh",
     "test": "vitest run",
     "verify:db": "node --env-file=.env.local scripts/verify-supabase.mjs",
-    "showcase": "node --env-file=.env.local scripts/make-showcase.mjs"
+    "showcase": "node --env-file=.env.local scripts/make-showcase.mjs",
+    "predev": "node scripts/copy-ocr-assets.mjs",
+    "prebuild": "node scripts/copy-ocr-assets.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
+    "@tesseract.js-data/eng": "^1.0.0",
     "next": "16.4.3",
     "pngjs": "^7.0.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

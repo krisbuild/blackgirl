@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { prepareForAnalysis } from "@/lib/image";
-import { BAND_LABEL, bandOf, insightsFrom, type Band, type Insight } from "@/lib/insights";
+import { BAND_LABEL, insightsFrom, type Band, type Insight } from "@/lib/insights";
 import { whereSummary, type MarkStats } from "@/lib/marks-shared";
 import { firstScanDate, saveScan, updateScanNote, type Analysis, type Feel, type ScanNote } from "@/lib/journal";
 import { DarkMarkPlan } from "./DarkMarkPlan";
@@ -31,10 +31,12 @@ export function ScanResult({
   photo,
   onRetake,
   onJournal,
+  onProduct,
 }: {
   photo: Blob;
   onRetake: () => void;
   onJournal: () => void;
+  onProduct?: () => void;
 }) {
   const [phase, setPhase] = useState<Phase>({ kind: "working", step: "preparing" });
   const [url, setUrl] = useState<string | null>(null);
@@ -144,6 +146,7 @@ export function ScanResult({
       saveError={phase.saveError}
       onRetake={onRetake}
       onJournal={onJournal}
+      onProduct={onProduct}
     />
   );
 }
@@ -159,6 +162,7 @@ function Results({
   saveError,
   onRetake,
   onJournal,
+  onProduct,
 }: {
   analysis: Analysis;
   photoUrl: string | null;
@@ -168,6 +172,7 @@ function Results({
   saveError?: string;
   onRetake: () => void;
   onJournal: () => void;
+  onProduct?: () => void;
 }) {
   const insights = useMemo(() => insightsFrom(analysis.concerns), [analysis]);
   const focus = insights.filter((i) => i.focus);
@@ -224,7 +229,7 @@ function Results({
       {acne && <MarkSummary label="acne spot" i={acne} stats={analysis.marks?.acne} feel={feel("acne")} />}
       {acne && <p className="mt-2 text-sm leading-relaxed text-muted">{acne.says[acne.band]}</p>}
 
-      <DarkMarkPlan analysis={analysis} firstScan={firstScan} note={note} onNote={patchNote} noteStatus={noteStatus} />
+      <DarkMarkPlan analysis={analysis} firstScan={firstScan} note={note} onNote={patchNote} noteStatus={noteStatus} onCheckProduct={onProduct} />
 
       {/* everything else */}
       <h3 className="mt-10 font-display text-xl">The rest of your skin</h3>
@@ -295,7 +300,6 @@ function MarkSummary({
   if (i.count == null) return null;
   const where = stats ? whereSummary(stats.zones) : null;
   const plural = i.count === 1 ? label : `${label}s`;
-  const diluted = i.count >= 4 && bandOf(i.score) === "clear";
   return (
     <div className="mt-3 rounded-xl bg-espresso/60 p-3 text-sm leading-relaxed text-sand">
       <p>
@@ -324,19 +328,6 @@ function MarkSummary({
           </button>
         ))}
       </div>
-      {feel.value === "more" && (
-        <p className="mt-2 text-xs leading-relaxed text-sand">
-          Thank you. AI can miss small, flat or shine-covered spots, especially in low-resolution photos. Your plan now
-          assumes more {label}s than we counted. For a sharper read next time: blot any shine, face a window, and use your
-          phone&apos;s main camera so we can run YouCam&apos;s finer HD analysis.
-        </p>
-      )}
-      {diluted && (
-        <p className="mt-1.5 text-xs text-muted">
-          Why the high score? YouCam scores your whole face, so a cluster of marks barely moves it. Counting the marks
-          is a truer way to track your fading, so that&apos;s what your journal follows.
-        </p>
-      )}
     </div>
   );
 }

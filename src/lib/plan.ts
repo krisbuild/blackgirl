@@ -120,9 +120,9 @@ export function buildPlan(input: PlanInput): Plan {
   if (activeAcne) {
     foundation.push(
       {
-        name: "Benzoyl peroxide 2.5% wash or spot gel",
+        name: "Benzoyl peroxide wash (2.5–4%)",
         when: "PM",
-        note: "Helps calm breakouts. Low strength is gentler; it can bleach fabric, so use white towels.",
+        note: "Helps calm breakouts. Leave on for a minute, then rinse. It can bleach fabric, so use white towels.",
       },
       { name: "Hands off", when: "AM & PM", note: "Picking or squeezing is one of the main reasons spots turn into dark marks." },
     );

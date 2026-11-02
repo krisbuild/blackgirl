@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { FaceCapture } from "./FaceCapture";
 import { Journal } from "./Journal";
+import { ProductCheck } from "./ProductCheck";
 import { ScanResult } from "./ScanResult";
 import { Tour } from "./Tour";
 import { Welcome } from "./Welcome";
 
-type Step = "welcome" | "tour" | "capture" | "result" | "journal";
+type Step = "welcome" | "tour" | "capture" | "result" | "journal" | "product";
 
 /** The app's main flow: welcome → preview → guided capture → analysis & results → journal. */
 export function Journey() {
@@ -15,6 +16,11 @@ export function Journey() {
   const [photo, setPhoto] = useState<Blob | null>(null);
   // A fresh key per photo so the result screen runs exactly one analysis for it.
   const [scanKey, setScanKey] = useState(0);
+  const [productFrom, setProductFrom] = useState<Step>("welcome");
+  const openProduct = (from: Step) => {
+    setProductFrom(from);
+    go("product");
+  };
 
   const go = (s: Step) => {
     setStep(s);
@@ -23,7 +29,7 @@ export function Journey() {
 
   switch (step) {
     case "welcome":
-      return <Welcome onStart={() => go("tour")} onJournal={() => go("journal")} />;
+      return <Welcome onStart={() => go("tour")} onJournal={() => go("journal")} onProduct={() => openProduct("welcome")} />;
     case "tour":
       return <Tour onStart={() => go("capture")} onBack={() => go("welcome")} />;
     case "capture":
@@ -39,9 +45,17 @@ export function Journey() {
       );
     case "result":
       return photo ? (
-        <ScanResult key={scanKey} photo={photo} onRetake={() => go("capture")} onJournal={() => go("journal")} />
+        <ScanResult
+          key={scanKey}
+          photo={photo}
+          onRetake={() => go("capture")}
+          onJournal={() => go("journal")}
+          onProduct={() => openProduct("result")}
+        />
       ) : null;
     case "journal":
-      return <Journal onNewScan={() => go("capture")} onHome={() => go("welcome")} />;
+      return <Journal onNewScan={() => go("capture")} onHome={() => go("welcome")} onProduct={() => openProduct("journal")} />;
+    case "product":
+      return <ProductCheck onBack={() => go(productFrom)} />;
   }
 }

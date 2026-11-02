@@ -19,7 +19,13 @@ Built for the YouCam API Skin AI & eCommerce VTO Hackathon.
 5. **Results:** warm, cosmetic-only explanations led by dark marks. YouCam's own detection masks
    can be shown over your photo, alongside ingredient picks matched to the scan and skin type,
    what to skip, and realistic timelines.
-6. **Journal:** every scan is saved privately in Supabase, with a trend chart per concern,
+6. **Product picks:** real products for every step of the plan (sunscreens without a white cast,
+   Black-owned brands tagged).
+7. **Product check:** photograph an ingredient list (read on-device with Tesseract.js) or paste it, and get a
+   verdict for *your* skin: Avoid / Use with care / Okay / Good / Great match, with the exact ingredients behind it.
+   It flags mercury, steroids (clobetasol and others) and hydroquinone, pore-clogging oils for oily skin, and
+   irritants. It reads labels only and can't detect counterfeits.
+8. **Journal:** every scan is saved privately in Supabase, with a trend chart per concern,
    a then-and-now comparison slider and delete.
 
 ### Counting marks, not just scoring them

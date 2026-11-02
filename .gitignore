@@ -43,3 +43,6 @@ next-env.d.ts
 
 # YouCam result cache (scores only)
 .cache/
+
+# OCR assets copied from node_modules at build time
+/public/ocr/
