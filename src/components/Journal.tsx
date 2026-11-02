@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useId, useState } from "react";
 import { BAND_LABEL, bandOf, CONCERNS } from "@/lib/insights";
-import { deleteScan, listScans, photoUrls, scoreOf, type Scan } from "@/lib/journal";
+import { deleteScan, listScans, photoUrls, readNote, scoreOf, weeksSince, type Scan } from "@/lib/journal";
+import { markAgeMonths, ONSETS, type Onset } from "@/lib/plan";
 
 const TRACKED = ["age_spot", "acne", "texture", "dark_circle_v2"] as const;
 
@@ -70,6 +71,8 @@ export function Journal({ onNewScan, onHome }: { onNewScan: () => void; onHome: 
 
       {scans && scans.length > 0 && latest && (
         <>
+          <MarkTracker scans={scans} />
+
           {/* progress */}
           <div className="mt-5 rounded-2xl bg-cocoa/80 p-4 ring-1 ring-mahogany">
             <div className="flex gap-1.5 overflow-x-auto">
@@ -221,6 +224,34 @@ function CompareSlider({ before, after }: { before: string; after: string }) {
         onChange={(e) => setPos(Number(e.target.value))}
         className="absolute inset-0 h-full w-full cursor-ew-resize opacity-0"
       />
+    </div>
+  );
+}
+
+function MarkTracker({ scans }: { scans: Scan[] }) {
+  const weeks = weeksSince(scans[0]?.created_at);
+  // The earliest answer the user gave about when their marks appeared.
+  const answered = scans.map((s) => ({ s, o: readNote(s).markOnset as Onset | undefined })).find((x) => x.o);
+  const onsetLabel = answered ? ONSETS.find((o) => o.id === answered.o)?.label : undefined;
+  const age = answered ? markAgeMonths(answered.o, weeksSince(answered.s.created_at)) : null;
+  const first = scoreOf(scans[0], "age_spot");
+  const last = scoreOf(scans[scans.length - 1], "age_spot");
+  return (
+    <div className="mt-5 grid grid-cols-3 gap-2 text-center">
+      <div className="rounded-2xl bg-cocoa/80 p-3 ring-1 ring-mahogany">
+        <p className="font-display text-2xl text-sun">{weeks}</p>
+        <p className="text-[10px] leading-tight text-muted">week{weeks === 1 ? "" : "s"} tracked</p>
+      </div>
+      <div className="rounded-2xl bg-cocoa/80 p-3 ring-1 ring-mahogany">
+        <p className="font-display text-2xl text-sun">{age == null ? "?" : age < 1 ? "<1" : Math.round(age)}</p>
+        <p className="text-[10px] leading-tight text-muted">{onsetLabel ? "months old (est.)" : "mark age: answer after a scan"}</p>
+      </div>
+      <div className="rounded-2xl bg-cocoa/80 p-3 ring-1 ring-mahogany">
+        <p className="font-display text-2xl text-sun">
+          {first != null && last != null && scans.length > 1 ? `${last - first >= 0 ? "+" : ""}${Math.round(last - first)}` : "—"}
+        </p>
+        <p className="text-[10px] leading-tight text-muted">dark-mark change</p>
+      </div>
     </div>
   );
 }

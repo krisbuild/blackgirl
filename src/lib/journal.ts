@@ -20,7 +20,34 @@ export type Scan = {
   overall: number | null;
   skin_age: number | null;
   skin_type: Record<string, string> | null;
+  note: string | null;
 };
+
+/** Small structured details kept in the scan's `note` column (max 500 chars). */
+export type ScanNote = { markOnset?: string };
+
+export function readNote(s: Pick<Scan, "note">): ScanNote {
+  try {
+    return s.note ? (JSON.parse(s.note) as ScanNote) : {};
+  } catch {
+    return {};
+  }
+}
+
+export async function updateScanNote(id: string, note: ScanNote): Promise<void> {
+  const { error } = await supabase().from("scans").update({ note: JSON.stringify(note) }).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/** Date of the user's first scan, for "how long have we been tracking". */
+export async function firstScanDate(): Promise<string | null> {
+  await ensureUser();
+  const { data } = await supabase().from("scans").select("created_at").order("created_at", { ascending: true }).limit(1);
+  return data?.[0]?.created_at ?? null;
+}
+
+export const weeksSince = (iso: string | null | undefined) =>
+  iso ? Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / (7 * 24 * 3600 * 1000))) : 0;
 
 const BUCKET = "scan-photos";
 
@@ -59,7 +86,7 @@ export async function listScans(): Promise<Scan[]> {
   await ensureUser();
   const { data, error } = await supabase()
     .from("scans")
-    .select("id, created_at, photo_path, concerns, overall, skin_age, skin_type")
+    .select("id, created_at, photo_path, concerns, overall, skin_age, skin_type, note")
     .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
   return (data ?? []) as Scan[];

@@ -2,13 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { prepareForAnalysis } from "@/lib/image";
-import { AVOID, BAND_LABEL, ingredientPicks, insightsFrom, type Band, type Insight } from "@/lib/insights";
-import { saveScan, type Analysis } from "@/lib/journal";
+import { BAND_LABEL, insightsFrom, type Band, type Insight } from "@/lib/insights";
+import { firstScanDate, saveScan, type Analysis } from "@/lib/journal";
+import { DarkMarkPlan } from "./DarkMarkPlan";
+import { SkinViewer } from "./SkinViewer";
 
 type Phase =
   | { kind: "working"; step: "preparing" | "analyzing" | "saving" }
   | { kind: "error"; message: string }
-  | { kind: "done"; analysis: Analysis; saved: boolean; saveError?: string };
+  | { kind: "done"; analysis: Analysis; scanId?: string; firstScan?: string | null; saveError?: string };
 
 const STEPS = [
   { key: "preparing", label: "Preparing your photo" },
@@ -67,11 +69,12 @@ export function ScanResult({
 
       setPhase({ kind: "working", step: "saving" });
       try {
-        await saveScan(prepared, analysis);
-        setPhase({ kind: "done", analysis, saved: true });
+        const scan = await saveScan(prepared, analysis);
+        const firstScan = await firstScanDate().catch(() => scan.created_at);
+        setPhase({ kind: "done", analysis, scanId: scan.id, firstScan });
       } catch (e) {
         // The analysis is still worth showing even if saving failed.
-        setPhase({ kind: "done", analysis, saved: false, saveError: (e as Error).message });
+        setPhase({ kind: "done", analysis, saveError: (e as Error).message });
       }
     })();
   }, [photo]);
@@ -128,7 +131,17 @@ export function ScanResult({
     );
   }
 
-  return <Results analysis={phase.analysis} photoUrl={url} saved={phase.saved} saveError={phase.saveError} onRetake={onRetake} onJournal={onJournal} />;
+  return (
+    <Results
+      analysis={phase.analysis}
+      photoUrl={url}
+      scanId={phase.scanId}
+      firstScan={phase.firstScan}
+      saveError={phase.saveError}
+      onRetake={onRetake}
+      onJournal={onJournal}
+    />
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -136,14 +149,16 @@ export function ScanResult({
 function Results({
   analysis,
   photoUrl,
-  saved,
+  scanId,
+  firstScan,
   saveError,
   onRetake,
   onJournal,
 }: {
   analysis: Analysis;
   photoUrl: string | null;
-  saved: boolean;
+  scanId?: string;
+  firstScan?: string | null;
   saveError?: string;
   onRetake: () => void;
   onJournal: () => void;
@@ -151,70 +166,44 @@ function Results({
   const insights = useMemo(() => insightsFrom(analysis.concerns), [analysis]);
   const focus = insights.filter((i) => i.focus);
   const more = insights.filter((i) => !i.focus);
-  const picks = useMemo(() => ingredientPicks(insights, analysis.skinType), [insights, analysis.skinType]);
-  const withMask = insights.filter((i) => analysis.concerns.find((c) => c.concern === i.concern)?.maskUrl);
-  const [overlay, setOverlay] = useState<string | null>(withMask.find((i) => i.concern === "age_spot")?.concern ?? null);
-  const maskUrl = overlay ? analysis.concerns.find((c) => c.concern === overlay)?.maskUrl : undefined;
   const darkMarks = insights.find((i) => i.concern === "age_spot");
+  const acne = insights.find((i) => i.concern === "acne");
   const skinType = analysis.skinType?.whole;
 
   return (
     <section className="mx-auto max-w-md px-5 pb-12 pt-8">
       <p className="text-xs uppercase tracking-[0.3em] text-honey">Your scan</p>
       <h2 className="mt-2 font-display text-[2rem] leading-tight">
-        Here&apos;s what your <em className="text-sun">skin</em> is telling us
+        Your dark marks, <em className="text-sun">up close</em>
       </h2>
 
-      {/* photo with YouCam's own detection overlay */}
-      <div className="relative mt-5 overflow-hidden rounded-[1.5rem] bg-cocoa ring-1 ring-mahogany" style={{ aspectRatio: "3 / 4" }}>
-        {photoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={photoUrl} alt="Your selfie" className="absolute inset-0 h-full w-full object-cover" />
-        )}
-        {maskUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={maskUrl} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-90" />
-        )}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-10">
-          {withMask.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {withMask.slice(0, 5).map((i) => (
-                <button
-                  key={i.concern}
-                  onClick={() => setOverlay(overlay === i.concern ? null : i.concern)}
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 transition ${
-                    overlay === i.concern ? "bg-sun text-espresso ring-sun" : "bg-black/40 text-shea ring-white/20"
-                  }`}
-                >
-                  {i.label}
-                </button>
-              ))}
-            </div>
-          )}
-          <p className="mt-2 text-[10px] text-sand/80">Highlights are YouCam&apos;s own detection maps. Tap to switch.</p>
-        </div>
-      </div>
+      <SkinViewer photoUrl={photoUrl} analysis={analysis} />
 
-      {/* headline */}
-      {darkMarks && (
-        <div className="mt-6 rounded-2xl bg-cocoa/80 p-5 ring-1 ring-mahogany">
-          <div className="flex items-baseline justify-between">
-            <h3 className="font-display text-xl">Dark marks</h3>
-            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${BAND_STYLE[darkMarks.band]}`}>{BAND_LABEL[darkMarks.band]}</span>
+      {/* the two headline concerns */}
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        {[darkMarks, acne].filter((x): x is Insight => !!x).map((i) => (
+          <div key={i.concern} className="rounded-2xl bg-cocoa/80 p-4 ring-1 ring-mahogany">
+            <p className="text-xs uppercase tracking-wider text-muted">{i.label}</p>
+            <p className="mt-1 font-display text-3xl text-shea">{Math.round(i.score)}</p>
+            <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${BAND_STYLE[i.band]}`}>{BAND_LABEL[i.band]}</span>
+            <ScoreBar score={i.score} compact />
           </div>
-          <p className="mt-2 leading-relaxed text-sand">{darkMarks.says[darkMarks.band]}</p>
-          <ScoreBar score={darkMarks.score} />
-        </div>
-      )}
+        ))}
+      </div>
+      {darkMarks && <p className="mt-3 leading-relaxed text-sand">{darkMarks.says[darkMarks.band]}</p>}
+      {acne && <p className="mt-2 text-sm leading-relaxed text-muted">{acne.says[acne.band]}</p>}
 
+      <DarkMarkPlan analysis={analysis} scanId={scanId} firstScan={firstScan} />
+
+      {/* everything else */}
+      <h3 className="mt-10 font-display text-xl">The rest of your skin</h3>
       <ul className="mt-3 space-y-3">
         {focus
-          .filter((i) => i.concern !== "age_spot")
+          .filter((i) => i.concern !== "age_spot" && i.concern !== "acne")
           .map((i) => (
             <InsightRow key={i.concern} i={i} />
           ))}
       </ul>
-
       {more.length > 0 && (
         <details className="mt-3 rounded-2xl bg-cocoa/60 p-4 ring-1 ring-mahogany">
           <summary className="cursor-pointer text-sm font-semibold text-sand">More about your skin{skinType ? ` · ${skinType} skin` : ""}</summary>
@@ -226,47 +215,12 @@ function Results({
         </details>
       )}
 
-      {/* next steps */}
-      <h3 className="mt-10 font-display text-2xl">
-        Your <em className="text-sun">next steps</em>
-      </h3>
-      <p className="mt-1 text-sm text-muted">Ingredients to look for, matched to this scan{skinType ? ` and your ${skinType.toLowerCase()} skin` : ""}.</p>
-      <ul className="mt-4 space-y-3">
-        {picks.map((p) => (
-          <li key={p.name} className="rounded-2xl bg-cocoa/70 p-4 ring-1 ring-mahogany">
-            <div className="flex items-start justify-between gap-3">
-              <p className="font-semibold text-shea">{p.name}</p>
-              <span className="shrink-0 rounded-full bg-good/15 px-2 py-0.5 text-[10px] font-semibold text-good">{p.for}</span>
-            </div>
-            <p className="mt-1 text-sm text-sand">{p.why}</p>
-            <p className="mt-1 text-xs text-muted">{p.how}</p>
-          </li>
-        ))}
-      </ul>
-
-      <div className="mt-4 rounded-2xl bg-terracotta/10 p-4 ring-1 ring-terracotta/40">
-        <p className="text-sm font-semibold text-shea">Skip these</p>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-sand">
-          {AVOID.map((a) => (
-            <li key={a}>{a}</li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="mt-4 rounded-2xl bg-mahogany/40 p-4 text-sm leading-relaxed text-sand">
-        <p className="font-semibold text-shea">What to expect</p>
-        <p className="mt-1">
-          Dark marks on melanin-rich skin usually fade over <strong>3 to 6 months</strong>, sometimes longer. Scan once a week in the same
-          light, and let your journal show you the change.
-        </p>
-      </div>
-
-      <p className="mt-4 text-xs leading-relaxed text-muted">
+      <p className="mt-6 text-xs leading-relaxed text-muted">
         Shine gives cosmetic guidance, not a diagnosis. For anything painful, spreading or worrying, please see a dermatologist.
       </p>
 
-      <p className={`mt-6 text-center text-xs ${saved ? "text-good" : "text-[#f0a383]"}`}>
-        {saved ? "✓ Saved to your private journal" : `Not saved: ${saveError}`}
+      <p className={`mt-6 text-center text-xs ${scanId ? "text-good" : "text-[#f0a383]"}`}>
+        {scanId ? "✓ Saved to your private journal" : `Not saved: ${saveError}`}
       </p>
       <div className="mt-3 grid grid-cols-2 gap-3">
         <button onClick={onRetake} className="rounded-full py-4 font-semibold text-sand ring-1 ring-mahogany">
@@ -280,17 +234,19 @@ function Results({
   );
 }
 
-function ScoreBar({ score }: { score: number }) {
+function ScoreBar({ score, compact = false }: { score: number; compact?: boolean }) {
   return (
-    <div className="mt-3">
+    <div className={compact ? "mt-2" : "mt-3"}>
       <div className="h-2 overflow-hidden rounded-full bg-mahogany">
         <div className="h-full rounded-full bg-gradient-to-r from-terracotta via-honey to-good" style={{ width: `${Math.max(4, Math.min(100, score))}%` }} />
       </div>
-      <div className="mt-1 flex justify-between text-[10px] text-muted">
-        <span>More visible</span>
-        <span>{Math.round(score)} / 100</span>
-        <span>Clearer</span>
-      </div>
+      {!compact && (
+        <div className="mt-1 flex justify-between text-[10px] text-muted">
+          <span>More visible</span>
+          <span>{Math.round(score)} / 100</span>
+          <span>Clearer</span>
+        </div>
+      )}
     </div>
   );
 }
