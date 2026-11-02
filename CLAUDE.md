@@ -15,7 +15,7 @@ Read this whole file before writing any code. It carries the context from planni
 A skin tracker for **black women with post-acne dark marks (post-inflammatory hyperpigmentation) and acne scars**. Dark marks are the #1 skin concern for melanin-rich skin, and generic skin apps ignore it.
 
 ### Core flow (build this first, end to end)
-1. **Guided capture:** a selfie with on-screen guidance for consistent lighting, distance and framing, so photos can be compared week to week. Ask for consent before the camera opens.
+1. **Guided capture:** a selfie with on-screen guidance for consistent lighting, distance and framing, so photos can be compared week to week. (Owner decision, 2026-11-02: no separate consent step; the browser's own camera permission prompt is the gate.)
 2. **Analysis:** send the photo to the YouCam AI Skin Analysis API on the server, using the async flow (upload → create task → poll for the result).
 3. **Explanation:** translate the scores into plain, warm language focused on dark marks, acne, texture and evenness, using cosmetic wording only.
 4. **History and comparison:** store each scan and show an interactive before/after comparison plus trend charts over time.

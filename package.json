@@ -9,7 +9,8 @@
     "lint": "eslint",
     "smoke": "bash scripts/smoke-analyze.sh",
     "test": "vitest run",
-    "verify:db": "node --env-file=.env.local scripts/verify-supabase.mjs"
+    "verify:db": "node --env-file=.env.local scripts/verify-supabase.mjs",
+    "showcase": "node --env-file=.env.local scripts/make-showcase.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

@@ -12,7 +12,7 @@ export function Journey() {
   const [photo, setPhoto] = useState<Blob | null>(null);
 
   if (step === "welcome") return <Welcome onStart={() => setStep("tour")} />;
-  if (step === "tour") return <Tour onAgree={() => setStep("capture")} onBack={() => setStep("welcome")} />;
+  if (step === "tour") return <Tour onStart={() => setStep("capture")} onBack={() => setStep("welcome")} />;
   if (step === "capture")
     return (
       <FaceCapture
