@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { FaceCapture } from "./FaceCapture";
 import { Journal } from "./Journal";
 import { ProductCheck } from "./ProductCheck";
@@ -17,15 +17,40 @@ export function Journey() {
   // A fresh key per photo so the result screen runs exactly one analysis for it.
   const [scanKey, setScanKey] = useState(0);
   const [productFrom, setProductFrom] = useState<Step>("welcome");
+  const resultScroll = useRef(0);
   const openProduct = (from: Step) => {
+    if (from === "result") resultScroll.current = window.scrollY;
     setProductFrom(from);
     go("product");
+  };
+  const backToResult = () => {
+    setStep("result");
+    requestAnimationFrame(() => window.scrollTo({ top: resultScroll.current }));
   };
 
   const go = (s: Step) => {
     setStep(s);
     window.scrollTo({ top: 0 });
   };
+
+  // Keep the result screen mounted while Product check is open from it, so coming back
+  // doesn't re-run (and re-save) the analysis or lose the user's answers.
+  if (photo && (step === "result" || (step === "product" && productFrom === "result"))) {
+    return (
+      <>
+        <div hidden={step !== "result"}>
+          <ScanResult
+            key={scanKey}
+            photo={photo}
+            onRetake={() => go("capture")}
+            onJournal={() => go("journal")}
+            onProduct={() => openProduct("result")}
+          />
+        </div>
+        {step === "product" && <ProductCheck onBack={backToResult} />}
+      </>
+    );
+  }
 
   switch (step) {
     case "welcome":

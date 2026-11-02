@@ -1,36 +1,58 @@
-# blackgirl: dark-mark & scar tracker for melanin-rich skin
+# Shine: a dark-mark and acne tracker for melanin-rich skin
 
-A skin tracker for Black women dealing with post-acne dark marks (post-inflammatory
-hyperpigmentation) and acne scarring. It uses the **YouCam AI Skin Analysis API** (Perfect Corp).
-Built for the YouCam API Skin AI & eCommerce VTO Hackathon.
+**Live app:** <https://blackgirl-zeta.vercel.app> (open it on your phone)
 
-> Cosmetic guidance only. This app does not diagnose or treat any condition. See a
-> dermatologist for medical concerns.
+Dark marks after acne (post-inflammatory hyperpigmentation) are the number one skin concern for Black women,
+and most skin apps weren't built for deep skin. Shine counts every dark mark and acne spot on
+**YouCam's AI Skin Analysis** detection maps, builds a cosmetic plan with real, ingredient-checked products,
+and tracks the marks week by week as they fade.
+
+Built for the YouCam API Skin AI & eCommerce VTO Hackathon (Perfect Corp).
+
+> **Cosmetic guidance, not a diagnosis.** Shine does not diagnose any condition. See a dermatologist
+> for persistent or severe concerns.
+
+## YouCam APIs used
+
+| API | How Shine uses it |
+|---|---|
+| **AI Skin Analysis (V2)** | Server-side: upload → task → bounded polling. 10 concerns per scan, **HD automatically** when the photo's short side is ≥ 1080 px. Shine uses the honest `raw_score`, not the inflated `ui_score`, and **counts the marks on YouCam's own detection masks** (connected blobs, face zones, % of face). |
+| **JS Camera Kit** (skincare mode) | Guided capture: live checks for face found, distance, facing forward and light, then automatic capture. |
+
+## Screenshots
+
+Screens below use a sample portrait. All numbers come from real YouCam calls.
+
+| | | |
+|---|---|---|
+| ![Welcome](docs/screenshots/01-welcome.jpg) | ![How accurate is this?](docs/screenshots/02-how-accurate.jpg) | ![Scan preview](docs/screenshots/03-scan-preview.jpg) |
+| ![Results: dark marks ringed](docs/screenshots/06-results-dark-marks.jpg) | ![Counts and mirror check](docs/screenshots/07-counts-and-mirror-check.jpg) | ![Reading confidence](docs/screenshots/08-reading-confidence.jpg) |
+| ![Dark mark plan](docs/screenshots/10-dark-mark-plan.jpg) | ![Why these products](docs/screenshots/11-why-these-products.jpg) | ![Product check: avoid](docs/screenshots/12-product-check-avoid.jpg) |
+| ![Routine rating](docs/screenshots/13-routine-rating.jpg) | ![Journal with demo trend](docs/screenshots/14-journal-with-demo-trend.jpg) | ![What we measured](docs/screenshots/09-what-we-measured.jpg) |
 
 ## What it does
 
-1. **Welcome:** "Hello, sunshine."
-2. **Preview:** a live scan showcase on a real 478-point face mesh (MediaPipe landmarks)
-   pointing at dark marks, acne, texture, dark undereyes and sunburn.
-3. **Guided capture:** the **YouCam JS Camera Kit** (skincare mode) checks light, angle and
-   distance live and captures automatically. Upload is the fallback.
-4. **Analysis:** the server sends the photo to **YouCam AI Skin Analysis** (upload → task → bounded
-   polling), caching by image hash so a photo never spends units twice.
-5. **Results:** warm, cosmetic-only explanations led by dark marks. YouCam's own detection masks
-   can be shown over your photo, alongside ingredient picks matched to the scan and skin type,
-   what to skip, and realistic timelines.
-6. **Product picks:** real products for every step of the plan (sunscreens without a white cast,
-   Black-owned brands tagged).
-7. **Product check:** photograph an ingredient list (read on-device with Tesseract.js) or paste it, and get a
-   verdict for *your* skin: Avoid / Use with care / Okay / Good / Great match, with the exact ingredients behind it.
-   It flags mercury, steroids (clobetasol and others) and hydroquinone, pore-clogging oils for oily skin, and
-   irritants. It reads labels only and can't detect counterfeits.
-8. **My routine:** list your own products (morning / night). Each is matched to its real ingredient list (from
-   Shine's verified catalogue, or looked up live on INCIDecoder, or pasted), checked for your skin, and the routine is
-   checked as a whole: missing morning sunscreen, retinoids in the morning, retinoid + acid on the same night,
-   harmful ingredients, overlaps, and gaps for dark marks or acne.
-9. **Journal:** every scan is saved privately in Supabase, with a trend chart per concern,
-   a then-and-now comparison slider and delete.
+1. **Guided capture:** the YouCam Camera Kit checks light, angle and distance live and takes the photo. Tips are
+   written for deep skin and textured hair (face a window, pull hair back, blot shine). You can also **upload a
+   photo** or use a simple backup camera.
+2. **Analysis:** the server sends the photo to YouCam AI Skin Analysis. The API key never reaches the phone.
+   Results are cached by image hash, so the same photo never spends credits twice.
+3. **Results, led by counts:** "61 dark marks, mostly on your forehead." Each mark is ringed on the photo (tap to
+   zoom). The user can answer **"Does this match your mirror?"**, and "I have more" makes the plan stronger. A
+   **reading-confidence** card says when the photo was below HD or had to be zoomed.
+4. **Dark mark plan:** Calm & protect → Fade → Renew, adjusted for mark age, pregnancy (no retinoids), sensitive
+   skin and warning signs (dermatologist first). Every step lists real products at three price bands, with
+   **"Why these"** (the key ingredient and what it does) and what was **left out for your skin** and why.
+5. **Product check:** photograph an ingredient list (read on the phone with Tesseract.js) or paste it. Shine flags
+   **mercury, steroids such as clobetasol, and hydroquinone** as Avoid, and pore-clogging oils and irritants as
+   Use with care. It reads labels only and can't tell whether a product is genuine.
+6. **My routine:** list your products for morning and night. Each one is matched to its real ingredient list and
+   checked, the routine is checked as a whole (missing sunscreen, retinoid + acid on the same night, overlaps), and
+   it gets a **rating out of 10**.
+7. **Journal:** every scan is saved privately (anonymous Supabase account, row-level security), with a trend chart,
+   a then-and-now photo slider and delete. Until there are two real scans, an example chart marked
+   **"Demo data"** shows what tracking looks like; it is never mixed with real results.
+8. **How accurate is this?** A small in-app card (and the section below) with our deep-skin test results.
 
 ### How the assessment works (server-side)
 
@@ -152,9 +174,9 @@ The response's `source` is `live` or `cache` (same photo seen before, no units s
 4. `GET /s2s/v2.0/task/skin-analysis/{task_id}` every 1–3 s until `success` or `error`
    (the docs say a task that isn't polled for about 10 s is dropped but still billed), with a hard 120 s cap
 
-Concerns requested (SD, needs a short side ≥ 480 px): `age_spot` (YouCam's pigmentation /
+Concerns requested (SD needs a short side ≥ 480 px; HD `hd_*` actions are used from 1080 px): `age_spot` (YouCam's pigmentation /
 spots detector, our proxy for dark marks), `acne`, `texture`, `redness`, `radiance`, `pore`,
-`oiliness`, `moisture` and `skin_type`.
+`oiliness`, `moisture`, `dark_circle_v2` and `skin_type`.
 
 We show `raw_score` as the main number. The docs say `ui_score` is deliberately adjusted
 upward "as a psychological motivator", which isn't honest enough for tracking progress.
@@ -171,6 +193,12 @@ NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/path/to/ca.crt npm run dev
 ```
 
 You don't need this on Vercel or a normal machine.
+
+### Deployment
+
+Deployed on Vercel. Set `YOUCAM_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in
+**Project → Settings → Environment Variables**, then redeploy. `GET /api/health` reports whether the key is set and
+well formed (never its value) and whether the server can reach YouCam.
 
 ## License
 

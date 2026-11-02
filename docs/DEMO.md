@@ -21,49 +21,46 @@ kept out of this public repo).
 
 ## Script (~2 minutes)
 
+Record on your phone (iOS: Control Centre → Screen Recording; Android: Quick Settings → Screen record) with the
+live app open at <https://blackgirl-zeta.vercel.app>. Screenshots for close-ups are in `docs/screenshots/`.
+
+> Your live numbers may differ from the ones below; say what your screen shows.
+
 | Time | On screen | Say |
 |---|---|---|
-| 0:00 | **01-welcome** | "Hello, sunshine. Dark marks after acne are the number one skin concern for Black women, and most skin apps weren't built for our skin. This is Shine." |
-| 0:12 | **02-preview-scan** | "Shine reads dark marks, acne, texture, dark undereyes and sunburn with YouCam's AI Skin Analysis." |
-| 0:20 | **03-guided-camera-tips** (live on phone) | "YouCam's JS Camera Kit checks light, angle and distance live and takes the photo itself. The tips are written for deep skin and textured hair, like blotting shine, because glare hides marks." |
-| 0:35 | **05-analysing** | "The photo goes to YouCam's skin analysis on our server. The API key never touches the phone." |
-| 0:42 | **06-results-dark-marks-ringed** | "Here's the problem we found. YouCam scored my dark marks 86.6 out of 100, 'clear'. But YouCam's own detection map marked 44 of them. So Shine counts every mark on the map and rings it." |
-| 1:00 | **07-zoom-forehead**, **08-zoom-cheek** | "Tap to zoom. 25 on my forehead, 9 on my left cheek, 7 on my right." |
-| 1:10 | **09-acne-ringed**, **11-mirror-check-acne** | "Acne: YouCam found 9. I have more than that, so I tell Shine, and my plan adjusts. AI can miss spots on deep skin, so the user gets the last word." |
-| 1:25 | **12-mark-age** | "A photo can't date a mark, so Shine asks how long they've been there, and the journal counts from today." |
-| 1:35 | **13-dark-mark-plan**, **13b-plan-products** | "Then a plan: calm the breakouts, fade with azelaic acid and niacinamide, renew with adapalene, and sunscreen with no white cast every day, with real products for each step, including Black-owned brands." |
-| 1:45 | **19-product-check-avoid**, **20-product-check-great** (live on phone) | "Already have a product? Snap the ingredient list. This 'toning' cream has a steroid and hydroquinone: avoid. This niacinamide serum: a great match for my skin." |
-| 1:52 | **16-journal** | "Every scan is private to me, and my journal tracks the count, so I can see 44 become 30 become 20." |
-| 2:02 | **10-counts-vs-score** | "Honest about accuracy: on every deep-skin photo we tested, redness read a perfect 100, so Shine labels it unreliable. Shine. Because you shine like the sun." |
+| 0:00 | Welcome | "Hello, sunshine. Dark marks after acne are the number one skin concern for Black women, and most skin apps weren't built for our skin. This is Shine." |
+| 0:10 | Tap **How accurate is this on deep skin?** | "Shine is honest about accuracy. We tested YouCam on deep skin and show what it catches and misses." |
+| 0:18 | Scan preview → **Start my scan** | "Shine uses two YouCam APIs: the JS Camera Kit for guided capture, and AI Skin Analysis." |
+| 0:25 | Guided camera (live) | "The Camera Kit checks my distance, angle and light live and takes the photo itself. You can also upload a photo." |
+| 0:35 | Analysing | "The photo goes to YouCam's skin analysis on our server, in HD. The API key never touches the phone." |
+| 0:42 | Results, rings on the face | "YouCam scored my dark marks 87 out of 100, 'clear'. But its own detection map marked 61 of them. So Shine counts every mark and rings it. Tap to zoom." |
+| 1:00 | Mirror check → **I have more** | "AI can miss spots on deep skin, so I get the last word. I see more acne than 8, so my plan gets stronger." |
+| 1:08 | Reading confidence card | "It tells me how much to trust this photo." |
+| 1:13 | Mark age + plan | "A photo can't date a mark, so Shine asks. Then a plan: calm the breakouts, fade with azelaic acid and niacinamide, sunscreen with no white cast every day." |
+| 1:25 | **Why these** + budget chips | "Every product is real and checked against its full ingredient list. It tells me why: niacinamide helps fade dark marks. Anything that doesn't suit my skin is left out, with the reason." |
+| 1:38 | Product check (paste or photo) | "Already have a cream? This one has a steroid, mercury and hydroquinone, which can damage deep skin. Avoid." |
+| 1:48 | My routine → rating | "Or check my whole routine. 8.5 out of 10, and one thing to change." |
+| 1:55 | Journal | "Every scan is private. The journal tracks the count week by week. This chart is clearly marked as demo data until my second scan." |
+| 2:05 | Back to welcome | "Cosmetic guidance, not a diagnosis. Shine. Because you shine like the sun." |
 
-**Tip:** record the phone screen itself (iOS Screen Recording / Android screen recorder) for the live camera
-part, and use the screenshots in `demo-kit` for close-ups.
-
-## Shot list (screenshots in the demo kit)
+## Screenshots (`docs/screenshots/`)
 
 | File | Shows |
 |---|---|
-| 01-welcome | "Hello, sunshine. You shine like the sun." |
-| 02-preview-scan | Face-mesh scan preview with Dark marks / Acne / Texture / Dark undereyes / Sunburn |
-| 03-guided-camera-tips | Live checks (Good light, Facing forward, Right distance) and deep-skin capture tips |
+| 01-welcome | "Hello, sunshine." |
+| 02-how-accurate | The small "How accurate is this?" card |
+| 03-scan-preview | Scan preview: dark marks, acne, texture, undereyes, sunburn |
 | 04-photo-check | Photo preview: Retake / Use this photo |
-| 05-analysing | "YouCam AI is reading your skin" progress |
-| 06-results-dark-marks-ringed | 44 dark marks ringed on YouCam's map, counts vs score |
-| 07-zoom-forehead | Zoom: forehead cluster |
-| 08-zoom-cheek | Zoom: cheek marks |
-| 09-acne-ringed | 9 acne spots ringed |
-| 10-counts-vs-score | "YouCam's detection map shows 44 dark marks…", why the score is high |
-| 11-mirror-check-acne | "Does this match your mirror?" → "I have more" |
-| 12-mark-age | How long have these marks been there? |
-| 13-dark-mark-plan | Calm & protect → Fade → Renew |
-| 14-ground-rules-dermatologist | Ground rules, dermatologist pointers, laser caution |
-| 15-results-full-page | Whole results page |
-| 16-journal | Weeks tracked, mark age, counts, history |
-| 13b-plan-products | Named products under each plan step (Black-owned tagged) |
-| 13c-check-a-product-cta | "Already have a product?" → Check a product |
-| 17-youcam-dark-mark-map / 18-youcam-acne-map | YouCam's raw masks with Shine's rings |
-| 19-product-check-avoid | Label photo → steroid + hydroquinone → **Avoid** |
-| 20-product-check-great | Label photo → niacinamide + zinc PCA → **Great match** |
+| 05-analysing | "YouCam AI is reading your skin" |
+| 06-results-dark-marks | Marks ringed on YouCam's detection map |
+| 07-counts-and-mirror-check | Counts first, score second, "Does this match your mirror?" |
+| 08-reading-confidence | Reading confidence and mark age |
+| 09-what-we-measured | Every measurement with its method |
+| 10-dark-mark-plan | Calm & protect → Fade → Renew, budget chips |
+| 11-why-these-products | "Why these" and "Left out for your skin" |
+| 12-product-check-avoid | Mercury, steroid and hydroquinone flagged |
+| 13-routine-rating | Routine rated 8.5 / 10 |
+| 14-journal-with-demo-trend | Journal with the labelled demo trend |
 
 ## Real results: full 16-concern YouCam scan of the team member's selfie
 
