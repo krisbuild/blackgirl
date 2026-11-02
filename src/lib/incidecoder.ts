@@ -5,7 +5,7 @@ import "server-only";
  * inkeedecoder.com). Server-side only; results cached in memory for the life of the process.
  */
 const BASE = "https://incidecoder.com";
-const UA = { "User-Agent": "Mozilla/5.0 (Shine skin journal; ingredient lookup)" };
+const UA = { "User-Agent": "Mozilla/5.0 (Seen skin journal; ingredient lookup)" };
 const cache = new Map<string, { title: string; inci: string; url: string } | null>();
 
 const decode = (s: string) =>
