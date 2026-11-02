@@ -31,8 +31,7 @@ export function Accuracy({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
         className="rise max-h-[80dvh] w-full max-w-sm overflow-y-auto rounded-3xl bg-cocoa p-5 shadow-2xl ring-1 ring-mahogany"
       >
-        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-honey">Shine · Honest numbers</p>
-        <div className="mt-1 flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3">
           <h2 id="accuracy-title" className="font-display text-2xl leading-tight">
             How accurate <em className="text-sun">is this?</em>
           </h2>
