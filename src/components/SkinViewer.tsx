@@ -64,7 +64,7 @@ export function SkinViewer({
               src={photoUrl}
               alt="Your selfie"
               className="absolute inset-0 h-full w-full object-cover transition-[filter] duration-300"
-              style={{ filter: enhance ? "contrast(1.45) brightness(1.12) saturate(1.15)" : "none" }}
+              style={{ filter: enhance ? "contrast(1.22) brightness(1.03) saturate(0.92)" : "none" }}
             />
           )}
           {mask && (
