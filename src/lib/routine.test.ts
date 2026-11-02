@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import INCI from "@/data/inci.json";
-import { checkRoutine, type RoutineItem } from "./routine";
+import { checkRoutine, rateRoutine, type RoutineItem } from "./routine";
 
 const V = INCI as Record<string, { inci: string }>;
 const item = (key: string, when: RoutineItem["when"]): RoutineItem => ({ name: key, when, inci: V[key].inci, source: "catalog" });
@@ -41,5 +41,18 @@ describe("checkRoutine (real ingredient lists)", () => {
     expect(r.findings[0].level).toBe("stop");
     expect(r.findings.map((f) => f.text).join()).toMatch(/Move Differin/);
     expect(r.findings.map((f) => f.text).join()).toMatch(/Pregnant/);
+  });
+});
+
+describe("rateRoutine", () => {
+  it("rates a clean routine highly and explains deductions", () => {
+    expect(rateRoutine([{ level: "good", text: "Morning sunscreen: X." }]).score).toBe(10);
+    const r = rateRoutine([{ level: "warn", text: "A and B in the same night can irritate." }, { level: "tip", text: "Add a moisturiser." }]);
+    expect(r.score).toBe(8);
+    expect(r.summary).toBe("1 thing to fix, plus 1 tip.");
+  });
+  it("caps the score without morning sunscreen or with a harmful product", () => {
+    expect(rateRoutine([{ level: "warn", text: "No sunscreen in your morning routine." }]).score).toBeLessThanOrEqual(5);
+    expect(rateRoutine([{ level: "stop", text: "Stop using X." }]).score).toBeLessThanOrEqual(3);
   });
 });

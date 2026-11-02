@@ -16,7 +16,34 @@ const EXFOLIANTS = ["Gentle acids (AHA)", "Salicylic acid"];
 const inSlot = (i: CheckedItem, s: "AM" | "PM") => i.when === s || i.when === "AM & PM";
 const has = (i: CheckedItem, label: string) => i.report.goods.some((g) => g.label === label);
 
-export function checkRoutine(items: RoutineItem[], profile: SkinProfile & { pregnant?: boolean }): { items: CheckedItem[]; findings: RoutineFinding[] } {
+export type RoutineRating = { score: number; label: string; summary: string };
+
+/**
+ * Overall routine rating out of 10, derived only from the findings, so every point lost has a
+ * visible reason. Harmful products or no morning sunscreen cap the score.
+ */
+export function rateRoutine(findings: RoutineFinding[]): RoutineRating {
+  const n = (l: RoutineFinding["level"]) => findings.filter((f) => f.level === l).length;
+  let score = 10 - 3.5 * n("stop") - 1.5 * n("warn") - 0.5 * n("tip");
+  const noSpf = findings.some((f) => f.text.startsWith("No sunscreen"));
+  if (n("stop")) score = Math.min(score, 3);
+  if (noSpf) score = Math.min(score, 5);
+  score = Math.max(1, Math.round(score * 2) / 2);
+  const label = score >= 9 ? "Excellent" : score >= 7.5 ? "Great" : score >= 6 ? "Good, with fixes" : score >= 4 ? "Needs work" : "Needs changes now";
+  const fixes = n("stop") + n("warn");
+  const summary =
+    fixes === 0
+      ? n("tip")
+        ? `Solid routine. ${n("tip")} small tip${n("tip") === 1 ? "" : "s"} below.`
+        : "Your routine covers the essentials for your skin."
+      : `${fixes} thing${fixes === 1 ? "" : "s"} to fix${n("tip") ? `, plus ${n("tip")} tip${n("tip") === 1 ? "" : "s"}` : ""}.`;
+  return { score, label, summary };
+}
+
+export function checkRoutine(
+  items: RoutineItem[],
+  profile: SkinProfile & { pregnant?: boolean },
+): { items: CheckedItem[]; findings: RoutineFinding[]; rating: RoutineRating } {
   const checked: CheckedItem[] = items.map((it) => ({ ...it, report: checkIngredients(it.inci, profile) }));
   const f: RoutineFinding[] = [];
   const names = (xs: CheckedItem[]) => xs.map((x) => x.name).join(", ");
@@ -85,5 +112,6 @@ export function checkRoutine(items: RoutineItem[], profile: SkinProfile & { preg
   }
 
   const order = { stop: 0, warn: 1, tip: 2, good: 3 } as const;
-  return { items: checked, findings: f.sort((x, y) => order[x.level] - order[y.level]) };
+  const findings = f.sort((x, y) => order[x.level] - order[y.level]);
+  return { items: checked, findings, rating: rateRoutine(findings) };
 }

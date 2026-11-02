@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { VERDICT_LABEL, type SkinProfile, type Verdict } from "@/lib/ingredients";
-import type { CheckedItem, RoutineFinding, Slot } from "@/lib/routine";
+import type { CheckedItem, RoutineFinding, RoutineRating, Slot } from "@/lib/routine";
 
 type Row = { name: string; when: Slot; ingredients: string; paste: boolean };
 const EMPTY: Row = { name: "", when: "AM & PM", ingredients: "", paste: false };
@@ -20,7 +20,7 @@ const VERDICT_TEXT: Record<Verdict, string> = { great: "text-good", good: "text-
 export function RoutineCheck({ profile }: { profile?: SkinProfile }) {
   const [rows, setRows] = useState<Row[]>([{ ...EMPTY, when: "AM" }, { ...EMPTY, when: "PM" }]);
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ items: CheckedItem[]; findings: RoutineFinding[]; notFound: string[] } | null>(null);
+  const [result, setResult] = useState<{ items: CheckedItem[]; findings: RoutineFinding[]; rating: RoutineRating; notFound: string[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const set = (i: number, patch: Partial<Row>) => setRows((rs) => rs.map((r, k) => (k === i ? { ...r, ...patch } : r)));
@@ -104,6 +104,17 @@ export function RoutineCheck({ profile }: { profile?: SkinProfile }) {
 
       {result && (
         <div className="mt-6 space-y-3" aria-live="polite">
+          <div className="flex items-center gap-4 rounded-2xl bg-cocoa/80 p-4 ring-1 ring-mahogany">
+            <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-full ring-4 ring-sun/70">
+              <span className="font-display text-3xl leading-none text-sun">{result.rating.score}</span>
+              <span className="text-[10px] text-muted">out of 10</span>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider text-muted">Routine rating</p>
+              <p className="font-display text-xl text-shea">{result.rating.label}</p>
+              <p className="text-xs text-sand">{result.rating.summary}</p>
+            </div>
+          </div>
           <h3 className="font-display text-xl">Your routine</h3>
           <ul className="space-y-2">
             {result.findings.map((f) => (
