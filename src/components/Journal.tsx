@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { BAND_LABEL, bandOf } from "@/lib/insights";
 import { countOf, deleteScan, listScans, photoUrls, readNote, scoreOf, weeksSince, type Scan } from "@/lib/journal";
 import { markAgeMonths, ONSETS, type Onset } from "@/lib/plan";
+import { Reminders } from "./Reminders";
 
 type Metric = { id: string; label: string; get: (s: Scan) => number | undefined; lowerIsBetter: boolean; unit: string; noun: string };
 
@@ -158,6 +159,8 @@ export function Journal({ onNewScan, onHome, onProduct }: { onNewScan: () => voi
           </ul>
         </>
       )}
+
+      <Reminders />
 
       <button onClick={onNewScan} className="mt-8 w-full rounded-full bg-gradient-to-r from-honey to-sun py-4 text-lg font-semibold text-espresso">
         {scans?.length ? "Scan this week" : "Take my first scan"}

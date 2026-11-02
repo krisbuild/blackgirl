@@ -26,6 +26,7 @@ Dark marks left behind by acne (post-inflammatory hyperpigmentation) are the num
 - **You get the last word:** "Does this match your mirror?" If you see more, the plan gets stronger. A reading-confidence card says when a photo was too small or soft.
 - **A plan with reasons:** Calm & protect → Fade → Renew, adjusted for how long the marks have been there, pregnancy (no retinoids), sensitive skin and warning signs (dermatologist first). Every step lists real products at three price bands, says **why** (for example, "niacinamide helps fade dark marks"), and shows which products were left out for your skin and why.
 - **Product check and routine rating:** photograph or paste an ingredient list. Shine flags mercury, steroids such as clobetasol, and hydroquinone, which are common in skin-bleaching creams, and rates your whole routine out of 10.
+- **Daily reminders:** "Apply sunscreen" every morning and "Drink water" every few hours, added to the phone's calendar with alerts so they ring even when the app is closed.
 - **Private journal:** every scan is saved to an anonymous, private account with a trend chart, a then-and-now slider and delete. Until there's a second scan, an example chart is clearly labelled "Demo data".
 
 ## How we built it

@@ -7,6 +7,7 @@ import { whereSummary, type MarkStats } from "@/lib/marks-shared";
 import { firstScanDate, saveScan, updateScanNote, type Analysis, type Feel, type ScanNote } from "@/lib/journal";
 import { Accuracy } from "./Accuracy";
 import { DarkMarkPlan } from "./DarkMarkPlan";
+import { Reminders } from "./Reminders";
 import { SkinViewer } from "./SkinViewer";
 
 type Phase =
@@ -265,6 +266,8 @@ function Results({
       <Confidence quality={analysis.quality} zoomed={zoomed} onMore={() => setShowAccuracy(true)} />
 
       <DarkMarkPlan analysis={analysis} firstScan={firstScan} note={note} onNote={patchNote} noteStatus={noteStatus} onCheckProduct={onProduct} />
+
+      <Reminders />
 
       {/* everything else */}
       <h3 className="mt-10 font-display text-xl">The rest of your skin</h3>

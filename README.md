@@ -52,7 +52,10 @@ Screens below use a sample portrait. All numbers come from real YouCam calls.
 7. **Journal:** every scan is saved privately (anonymous Supabase account, row-level security), with a trend chart,
    a then-and-now photo slider and delete. Until there are two real scans, an example chart marked
    **"Demo data"** shows what tracking looks like; it is never mixed with real results.
-8. **How accurate is this?** A small in-app card (and the section below) with our deep-skin test results.
+8. **Daily reminders:** "Apply sunscreen" (plus an optional midday reapply) and "Drink water" every 2 or 3 hours,
+   at times you choose. `GET /api/reminders` builds a calendar file of daily events with alerts, so they ring even
+   when Shine is closed (a website can't send scheduled notifications on iPhone).
+9. **How accurate is this?** A small in-app card (and the section below) with our deep-skin test results.
 
 ### How the assessment works (server-side)
 
